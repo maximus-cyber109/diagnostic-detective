@@ -131,8 +131,27 @@ class App {
     }
   }
 
-  loadDashboard() {
+  async loadDashboard() {
     this.showScreen('dashboard');
+
+    // Force a user metadata refresh to ensure stats are accurate
+    const currentUser = window.auth.getUser();
+    if (currentUser && window.database) {
+      try {
+        // Background refresh
+        window.database.getUserStats(currentUser.id).then(freshStats => {
+          if (freshStats) {
+            const merged = { ...window.auth.getUser(), ...freshStats };
+            window.auth.updateUser(merged);
+            // Update UI immediately
+            const solvedEl = document.getElementById('dash-solved');
+            if (solvedEl) solvedEl.textContent = merged.casesSolved || merged.cases_solved || 0;
+          }
+        });
+      } catch (e) {
+        console.warn("Failed to background refresh stats", e);
+      }
+    }
 
     const user = window.auth.getUser();
     if (user) {
@@ -146,13 +165,7 @@ class App {
 
       const solvedEl = document.getElementById('dash-solved');
       if (solvedEl) {
-        solvedEl.textContent = user.casesSolved || 0;
-      }
-
-      const accuracyEl = document.getElementById('dash-accuracy');
-      if (accuracyEl) {
-        const acc = user.averageAccuracy || 0;
-        accuracyEl.textContent = acc > 0 ? acc + '%' : '--';
+        solvedEl.textContent = user.casesSolved || user.cases_solved || 0;
       }
     }
 
@@ -498,11 +511,12 @@ class App {
         title: 'Diagnostic Detective',
         text: 'Can you solve this dental case? Play now!',
         url: url
-      }).catch(console.error);
+      }).catch(err => {
+        console.warn('Navigator share blocked/failed, trying clipboard:', err);
+        this.fallbackCopy(url);
+      });
     } else {
-      navigator.clipboard.writeText(url)
-        .then(() => window.ui.showToast('Link copied to clipboard!', 'success'))
-        .catch(() => window.ui.showToast('Failed to copy link', 'error'));
+      this.fallbackCopy(url);
     }
   }
 
@@ -619,15 +633,23 @@ class App {
         console.log('✅ Attempt recorded:', data);
 
         // Update Local Stats (Practice Mode Limit)
+        // Update Local Stats (Practice Mode Limit)
         if (data.newStats) {
-          window.auth.updateUser(data.newStats);
+          const updatedUser = { ...window.auth.getUser(), ...data.newStats };
+          window.auth.updateUser(updatedUser);
         }
 
-        // Pass reward to result modal
+        // Pass reward to result modal (Block reward in practice mode)
+        let finalReward = data.reward;
+        if (this.currentCase.isPracticeMode) {
+          finalReward = null;
+        }
+
         this.showResult({
           ...result,
           scoreEarned: score,
-          reward: data.reward
+          reward: finalReward,
+          isPracticeMode: this.currentCase.isPracticeMode
         });
 
       } else {

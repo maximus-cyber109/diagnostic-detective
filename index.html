@@ -122,6 +122,20 @@
                 box-shadow: 0 0 0 0 rgba(0, 122, 255, 0);
             }
         }
+
+        /* Block External Notifications */
+        .carousel-notification,
+        .carousel-inner,
+        .carousel-item {
+            display: none !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+            visibility: hidden !important;
+            height: 0 !important;
+            width: 0 !important;
+            position: absolute !important;
+            z-index: -9999 !important;
+        }
     </style>
 </head>
 
@@ -215,34 +229,20 @@
                     </button>
                 </div>
 
-                <div
-                    class="mt-10 text-center space-y-2 bg-white/60 backdrop-blur-sm p-4 rounded-xl border border-white/50 shadow-sm">
-                    <p class="text-text-main text-sm font-semibold">New Cases Available</p>
-                    <div class="flex items-center justify-center gap-2">
-                        <span class="relative flex h-2 w-2">
-                            <span
-                                class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-teal opacity-75"></span>
-                            <span class="relative inline-flex rounded-full h-2 w-2 bg-accent-teal"></span>
-                        </span>
-                        <span class="text-[10px] text-text-muted font-mono uppercase tracking-wide">Syncing...</span>
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-2 gap-4 mt-8">
+                    <div
+                        class="col-span-1 bg-white rounded-2xl p-4 border border-border-light shadow-soft-panel text-center flex flex-col justify-center h-full">
+                        <p class="text-text-muted text-[10px] uppercase tracking-wider font-bold mb-1">Cases Solved</p>
+                        <p class="text-text-main text-3xl font-bold font-display" id="dash-solved">0</p>
                     </div>
-                </div>
-            </div>
 
-            <!-- Stats Grid -->
-            <div class="grid grid-cols-2 gap-4 mt-8">
-                <div
-                    class="col-span-2 bg-white rounded-2xl p-4 border border-border-light shadow-soft-panel text-center">
-                    <p class="text-text-muted text-[10px] uppercase tracking-wider font-bold mb-2">Cases Solved</p>
-                    <p class="text-text-main text-3xl font-bold font-display" id="dash-solved">0</p>
+                    <button onclick="app.showHistory()"
+                        class="col-span-1 py-3 px-2 rounded-xl bg-indigo-50 border-2 border-indigo-100 text-indigo-600 font-bold text-xs hover:bg-indigo-100 transition-colors flex flex-col items-center justify-center gap-1 h-full">
+                        <span class="material-symbols-outlined text-xl">history</span>
+                        View History
+                    </button>
                 </div>
-
-                <button onclick="app.showHistory()"
-                    class="col-span-2 py-3 rounded-xl bg-indigo-50 border-2 border-indigo-100 text-indigo-600 font-bold text-sm hover:bg-indigo-100 transition-colors flex items-center justify-center gap-2">
-                    <span class="material-symbols-outlined">history</span>
-                    View Case History
-                </button>
-            </div>
         </main>
 
         <!-- Leaderboard Widget -->
