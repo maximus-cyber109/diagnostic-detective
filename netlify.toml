@@ -1,6 +1,7 @@
 [build]
   publish = "."
-  functions = "functions"
+  # functions = "netlify/functions" # Default, but can be explicit
+  functions = "netlify/functions"
 
 [build.environment]
   NODE_VERSION = "18"
