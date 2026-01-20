@@ -68,11 +68,7 @@ class App {
         const emailInput = document.getElementById('user-email');
         const email = passedEmail || (emailInput ? emailInput.value : ''); // Param or Input
 
-        // Check for override
-        if (email.includes('-ovr') || email.length > 0) {
-            // Bypass strict check if user is struggling or provides specific flag
-            console.log("Validation Override Active");
-        }
+
 
         const user = await Auth.login(email);
         if (user) {

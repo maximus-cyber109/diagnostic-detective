@@ -41,7 +41,6 @@ export const logout = () => {
 };
 
 function validateEmail(email) {
-    // Relaxed Validation: Allow any string with at least 3 chars for "override" effect
-    // User requested easy access
-    return String(email).length > 2;
+    const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return re.test(String(email).toLowerCase());
 }
