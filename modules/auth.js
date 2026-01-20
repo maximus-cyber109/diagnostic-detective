@@ -10,29 +10,50 @@ export const checkSession = () => {
 };
 
 export const login = async (email) => {
-    // 1. Validate Email format
+    // 1. Validate Email format locally first
     if (!validateEmail(email)) return null;
 
-    // 2. Call Backend to Validate (Mocking for now)
-    // const response = await fetch(window.GAME_CONFIG.api.validateCustomer, { ... });
+    // 2. Call Magento via Netlify Function
+    try {
+        const response = await fetch(window.GAME_CONFIG.api.validateCustomer, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                action: 'getCustomer',
+                email: email
+            })
+        });
 
-    // MOCK RESPONSE
-    await new Promise(resolve => setTimeout(resolve, 800)); // Simulate net lag
+        const data = await response.json();
 
-    const mockUser = {
-        id: 'u123',
-        email: email,
-        display_name: 'Dr. Test User',
-        rank_title: 'Diagnostic Novice',
-        total_score: 0,
-        cases_solved: 0,
-        average_accuracy: '0.00',
-        best_streak: 0,
-        reward_attempts_used: 0
-    };
+        if (data.success && data.customer) {
+            // Customer found in Magento
+            const user = {
+                id: data.customer.id,
+                email: data.customer.email,
+                display_name: `Dr. ${data.customer.firstname} ${data.customer.lastname}`,
+                rank_title: 'Diagnostic Novice',
+                total_score: 0,
+                cases_solved: 0,
+                average_accuracy: '0.00',
+                best_streak: 0,
+                current_streak: 0,
+                reward_attempts_used: 0
+            };
 
-    localStorage.setItem('dd_session', JSON.stringify(mockUser));
-    return mockUser;
+            localStorage.setItem('dd_session', JSON.stringify(user));
+            return user;
+        } else {
+            // Customer not found
+            console.warn('Customer not found:', data.error);
+            return null;
+        }
+    } catch (error) {
+        console.error('Login API Error:', error);
+        return null;
+    }
 };
 
 export const logout = () => {
