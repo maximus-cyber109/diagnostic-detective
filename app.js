@@ -54,14 +54,20 @@ class App {
         const startBtn = document.getElementById('start-game-btn');
         if (startBtn) startBtn.addEventListener('click', () => this.startRandomGame());
 
-        // Exit Game
-        document.getElementById('exit-game-btn').addEventListener('click', () => {
-            Game.stopTimer();
-            this.loadDashboard();
-        });
+        // Exit Game (optional element)
+        const exitBtn = document.getElementById('exit-game-btn');
+        if (exitBtn) {
+            exitBtn.addEventListener('click', () => {
+                Game.stopTimer();
+                this.loadDashboard();
+            });
+        }
 
-        // Submit Answer
-        document.getElementById('submit-btn').addEventListener('click', () => this.submitAnswer());
+        // Submit Answer (optional - new UI uses submit-btn-lg with inline onclick)
+        const submitBtn = document.getElementById('submit-btn');
+        if (submitBtn) {
+            submitBtn.addEventListener('click', () => this.submitAnswer());
+        }
     }
 
     async handleLogin(passedEmail = null) {
@@ -117,7 +123,7 @@ class App {
 
         this.renderGame(selectedCase);
         this.showScreen('game-screen');
-        this.showStep('history'); // Start at history
+        // Step initialization is handled inside renderGame via updateStepUI()
 
         Game.initGame(selectedCase, () => this.handleTimeUp());
     }
