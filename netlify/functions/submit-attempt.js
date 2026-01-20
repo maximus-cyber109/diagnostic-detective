@@ -119,6 +119,9 @@ exports.handler = async (event, context) => {
         };
 
         if (currentUser) {
+            console.log('📝 Updating stats for user:', userId);
+            console.log('Current Score:', currentUser.total_score, 'Adding:', totalScore);
+
             // Calculate new values based on current DB state
             if (!isPracticeMode) {
                 updates.reward_attempts_used = (currentUser.reward_attempts_used || 0) + 1;
@@ -130,12 +133,21 @@ exports.handler = async (event, context) => {
 
             // Update score
             updates.total_score = (currentUser.total_score || 0) + totalScore;
+
+            console.log('New Stats:', updates);
         }
 
-        await supabase
+        const { error: updateError } = await supabase
             .from('diagnostic_users')
             .update(updates)
             .eq('id', userId);
+
+        if (updateError) {
+            console.error('❌ Failed to update user stats:', updateError);
+            // We don't fail the written attempt, but we should know about this
+        } else {
+            console.log('✅ User stats updated successfully');
+        }
 
         // Update case play count using the valid RPC function ONLY if we have a real DB case ID
         if (dbCaseId) {
