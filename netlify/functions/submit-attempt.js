@@ -97,28 +97,34 @@ exports.handler = async (event, context) => {
         }
 
         // Update user statistics
+        // Update user statistics
+        const { data: currentUser, error: userError } = await supabase
+            .from('diagnostic_users')
+            .select('total_attempts, total_score, cases_solved, reward_attempts_used')
+            .eq('id', userId)
+            .single();
+
+        if (userError && userError.code !== 'PGRST116') {
+             console.warn('Could not fetch user stats for update', userError);
+        }
+
         const updates = {
             total_attempts: attemptNumber,
             last_game_at: new Date().toISOString()
         };
 
-        if (!isPracticeMode) {
-            updates.reward_attempts_used = supabase.rpc('increment', { row_id: userId, column_name: 'reward_attempts_used' });
-        }
-
-        if (isCorrect) {
-            updates.cases_solved = supabase.rpc('increment', { row_id: userId, column_name: 'cases_solved' });
-        }
-
-        // Update best score if this is better
-        const { data: currentUser } = await supabase
-            .from('diagnostic_users')
-            .select('total_score, best_streak')
-            .eq('id', userId)
-            .single();
-
         if (currentUser) {
-            updates.total_score = (currentUser.total_score || 0) + totalScore;
+             // Calculate new values based on current DB state
+             if (!isPracticeMode) {
+                 updates.reward_attempts_used = (currentUser.reward_attempts_used || 0) + 1;
+             }
+             
+             if (isCorrect) {
+                 updates.cases_solved = (currentUser.cases_solved || 0) + 1;
+             }
+             
+             // Update score
+             updates.total_score = (currentUser.total_score || 0) + totalScore;
         }
 
         await supabase
@@ -126,8 +132,12 @@ exports.handler = async (event, context) => {
             .update(updates)
             .eq('id', userId);
 
-        // Update case play count
-        await supabase.rpc('increment_case_play_count', { case_id: caseId });
+        // Update case play count using the valid RPC function
+        try {
+            await supabase.rpc('increment_case_play_count', { case_id: caseId });
+        } catch (rpcError) {
+            console.warn('Failed to increment case count:', rpcError);
+        }
 
         return {
             statusCode: 200,
