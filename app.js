@@ -4,7 +4,7 @@ class App {
     this.currentScreen = 'auth';
     this.currentCase = null;
     this.currentStep = 1;
-    
+
     this.waitForModules().then(() => {
       this.init();
     }).catch(err => {
@@ -15,26 +15,26 @@ class App {
 
   async waitForModules() {
     console.log('⏳ Waiting for modules to load...');
-    
+
     const maxWait = 5000;
     const startTime = Date.now();
-    
+
     while (!this.modulesReady()) {
       if (Date.now() - startTime > maxWait) {
         throw new Error('Modules failed to load in time');
       }
       await new Promise(resolve => setTimeout(resolve, 100));
     }
-    
+
     console.log('✅ All modules loaded');
   }
 
   modulesReady() {
     return (
-      window.database && 
-      window.ui && 
-      window.auth && 
-      window.cases && 
+      window.database &&
+      window.ui &&
+      window.auth &&
+      window.cases &&
       window.game &&
       window.GAME_CONFIG
     );
@@ -42,16 +42,16 @@ class App {
 
   async init() {
     console.log('🚀 Initializing Diagnostic Detective...');
-    
+
     try {
       // Initialize database (don't fail if it doesn't work)
       await window.database.init().catch(err => {
         console.warn('⚠️ Database init failed, continuing anyway:', err);
       });
-      
+
       // Check for existing session
       const hasSession = window.auth.checkSession();
-      
+
       if (hasSession) {
         console.log('✅ Session found, loading dashboard...');
         this.loadDashboard();
@@ -59,10 +59,10 @@ class App {
         console.log('🔐 No session, showing login...');
         this.showScreen('auth');
       }
-      
+
       // Setup event listeners
       this.setupEventListeners();
-      
+
     } catch (error) {
       console.error('❌ Initialization error:', error);
       this.showError('Failed to initialize application');
@@ -112,7 +112,7 @@ class App {
 
   loadDashboard() {
     this.showScreen('dashboard');
-    
+
     const user = window.auth.getUser();
     if (user) {
       // Update dashboard with user info
@@ -120,34 +120,34 @@ class App {
       if (displayNameEl) {
         displayNameEl.textContent = user.displayName || 'DOCTOR';
       }
-      
+
       const solvedEl = document.getElementById('dash-solved');
       if (solvedEl) {
         solvedEl.textContent = user.casesSolved || 0;
       }
-      
+
       const accuracyEl = document.getElementById('dash-accuracy');
       if (accuracyEl) {
         const acc = user.averageAccuracy || 0;
         accuracyEl.textContent = acc > 0 ? acc + '%' : '--';
       }
     }
-    
+
     // Load cases
     window.cases.loadCases();
   }
 
   async startRandomGame() {
     const randomCase = window.cases.getRandomCase();
-    
+
     if (!randomCase) {
       window.ui.showToast('No cases available', 'error');
       return;
     }
-    
+
     this.currentCase = randomCase;
     this.currentStep = 1;
-    
+
     // Show instructions first
     const instructionsModal = document.getElementById('instructions-modal');
     if (instructionsModal) {
@@ -160,57 +160,57 @@ class App {
     if (modal) {
       modal.classList.add('hidden');
     }
-    
+
     // Now start the actual game
     this.loadGameScreen();
   }
 
   loadGameScreen() {
     this.showScreen('game');
-    
+
     // Initialize game
     window.game.startGame(this.currentCase);
-    
+
     // Populate case data
     this.updateGameUI();
   }
 
   updateGameUI() {
     if (!this.currentCase) return;
-    
+
     // Update patient name
     const ptNameEl = document.getElementById('pt-name');
     if (ptNameEl) {
       ptNameEl.textContent = this.currentCase.title || 'PATIENT';
     }
-    
+
     // Update vitals (mock data for now)
     const bpSysEl = document.getElementById('pt-bp-sys-lg');
     const bpDiaEl = document.getElementById('pt-bp-dia-lg');
     if (bpSysEl) bpSysEl.textContent = '120';
     if (bpDiaEl) bpDiaEl.textContent = '/80';
-    
+
     // Update complaint
     const complaintEl = document.getElementById('history-complaint-lg');
     if (complaintEl) {
       complaintEl.textContent = this.currentCase.chiefComplaint || 'No complaint recorded';
     }
-    
+
     // Update image
     const imgEl = document.getElementById('game-image-lg');
     if (imgEl && this.currentCase.primaryImageUrl) {
       imgEl.src = this.currentCase.primaryImageUrl;
     }
-    
+
     // Update findings
     const findingsEl = document.getElementById('exam-findings-lg');
     if (findingsEl && this.currentCase.clinicalFindings) {
       findingsEl.textContent = this.currentCase.clinicalFindings.join(', ');
     }
-    
+
     // Populate options
     this.populateOptions();
-    
+
     // Show first step
     this.showStep(1);
   }
@@ -218,14 +218,14 @@ class App {
   populateOptions() {
     const container = document.getElementById('game-options-lg');
     if (!container || !this.currentCase) return;
-    
+
     const options = [
       { letter: 'A', text: this.currentCase.option_a },
       { letter: 'B', text: this.currentCase.option_b },
       { letter: 'C', text: this.currentCase.option_c },
       { letter: 'D', text: this.currentCase.option_d }
     ];
-    
+
     container.innerHTML = options.map(opt => `
       <button onclick="app.selectOption('${opt.letter}')" 
               class="option-btn text-left p-4 bg-white rounded-xl border-2 border-slate-200 hover:border-primary hover:bg-blue-50 transition-all active:scale-95 flex items-center gap-3"
@@ -244,14 +244,14 @@ class App {
       btn.classList.remove('border-primary', 'bg-blue-50');
       btn.classList.add('border-slate-200');
     });
-    
+
     // Highlight selected
     const selectedBtn = document.querySelector(`[data-option="${letter}"]`);
     if (selectedBtn) {
       selectedBtn.classList.add('border-primary', 'bg-blue-50');
       selectedBtn.classList.remove('border-slate-200');
     }
-    
+
     // Store selection
     window.game.selectAnswer(letter);
   }
@@ -270,20 +270,20 @@ class App {
       if (stepEl) {
         stepEl.classList.add('hidden');
       }
-      
+
       const progEl = document.getElementById(`prog-${i}`);
       if (progEl) {
         progEl.classList.remove('bg-primary');
         progEl.classList.add('bg-slate-200');
       }
     }
-    
+
     // Show current step
     const currentStepEl = document.getElementById(`step-${step}`);
     if (currentStepEl) {
       currentStepEl.classList.remove('hidden');
     }
-    
+
     // Update progress
     for (let i = 1; i <= step; i++) {
       const progEl = document.getElementById(`prog-${i}`);
@@ -292,17 +292,17 @@ class App {
         progEl.classList.remove('bg-slate-200');
       }
     }
-    
+
     // Update step indicator
     const stepIndicator = document.getElementById('step-indicator');
     if (stepIndicator) {
       stepIndicator.textContent = `STEP ${step}/3`;
     }
-    
+
     // Toggle buttons
     const nextBtn = document.getElementById('next-btn');
     const submitBtn = document.getElementById('submit-btn-lg');
-    
+
     if (step === 3) {
       if (nextBtn) nextBtn.classList.add('hidden');
       if (submitBtn) submitBtn.classList.remove('hidden');
@@ -312,29 +312,96 @@ class App {
     }
   }
 
-  submitAnswer() {
+  async submitAnswer() {
     const result = window.game.checkAnswer();
-    
+    const user = window.auth.getUser();
+
+    if (!user) {
+      console.error('No user found for submission');
+      this.showResult(result);
+      return;
+    }
+
+    // Calculate Score
+    let score = 0;
+    let timeBonus = 0;
+    let streakBonus = 0;
+
+    if (result.correct) {
+      score = window.GAME_CONFIG.game.basePoints || 100;
+
+      // Time Bonus
+      if (result.timeTaken < (window.GAME_CONFIG.game.timeBonusThreshold || 60)) {
+        timeBonus = window.GAME_CONFIG.game.timeBonus || 50;
+        score += timeBonus;
+      }
+
+      // Streak Bonus (Mock for now, or check local streak)
+      // For simplicity, we'll let the backend determine consecutive streaks if needed, 
+      // but if we want to send it, we need to track it locally. 
+      // Let's assume 0 for now to be safe or read from user object if we tracked it in session.
+    }
+
+    const payload = {
+      userId: user.id,
+      caseId: this.currentCase.id,
+      caseCode: this.currentCase.caseCode,
+      selectedOption: result.selectedAnswer,
+      isCorrect: result.correct,
+      timeTaken: result.timeTaken,
+      scoreEarned: score,
+      timeBonus: timeBonus,
+      streakBonus: streakBonus,
+      totalScore: score, // For this attempt
+      isPracticeMode: false, // Default to ranked
+      difficulty: this.currentCase.difficulty
+    };
+
+    console.log('📤 Submitting attempt:', payload);
+
+    try {
+      // Send to Backend
+      const response = await fetch(window.GAME_CONFIG.api.submitAttempt, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        console.log('✅ Attempt recorded:', data);
+        // Could update local user stats here with data.attempt or re-fetch user
+      } else {
+        console.error('❌ Submission failed:', data.error);
+      }
+
+    } catch (err) {
+      console.error('❌ Network error submitting attempt:', err);
+    }
+
     // Show result modal
-    this.showResult(result);
+    this.showResult({ ...result, scoreEarned: score });
   }
 
   showResult(result) {
     const modal = document.getElementById('result-modal');
     if (!modal) return;
-    
+
     const iconContainer = document.getElementById('result-icon-container');
     const icon = document.getElementById('result-icon');
     const title = document.getElementById('result-title');
     const score = document.getElementById('result-score');
     const explanation = document.getElementById('result-explanation');
-    
+
     if (result.correct) {
       iconContainer.className = 'size-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-green-100';
       icon.textContent = 'check_circle';
       icon.className = 'material-symbols-outlined text-4xl text-green-500';
       title.textContent = 'Correct Diagnosis!';
-      score.textContent = '+100 Points';
+      score.textContent = `+${result.scoreEarned || 100} Points`;
     } else {
       iconContainer.className = 'size-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-red-100';
       icon.textContent = 'cancel';
@@ -342,11 +409,11 @@ class App {
       title.textContent = 'Incorrect';
       score.textContent = `Correct answer: ${result.correctAnswer}`;
     }
-    
+
     if (explanation) {
       explanation.textContent = result.explanation || 'No explanation available';
     }
-    
+
     modal.classList.remove('hidden');
   }
 
@@ -355,7 +422,7 @@ class App {
     if (modal) {
       modal.classList.add('hidden');
     }
-    
+
     // Return to dashboard
     this.loadDashboard();
   }
@@ -363,11 +430,11 @@ class App {
   openVitalsModal(type) {
     const modal = document.getElementById('vitals-modal');
     const content = document.getElementById('modal-content-bp');
-    
+
     if (modal && content) {
       content.classList.remove('hidden');
       modal.classList.remove('hidden');
-      
+
       // Animate BP bars
       setTimeout(() => {
         const sysBar = document.getElementById('sys-bar-graph');
@@ -380,7 +447,7 @@ class App {
 
   showScreen(screenName) {
     console.log('📺 Showing screen:', screenName);
-    
+
     const screens = ['auth', 'dashboard', 'game'];
     screens.forEach(screen => {
       const el = document.getElementById(`${screen}-screen`);
