@@ -26,12 +26,20 @@ class App {
         this.bindEvents();
 
         // Session Check
-        const existingSession = Auth.checkSession();
-        if (existingSession) {
-            this.state.currentUser = existingSession;
-            this.loadDashboard();
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlEmail = urlParams.get('email');
+
+        if (urlEmail) {
+            // Auto-login from URL
+            this.handleLogin(urlEmail);
         } else {
-            this.showScreen('auth-screen');
+            const existingSession = Auth.checkSession();
+            if (existingSession) {
+                this.state.currentUser = existingSession;
+                this.loadDashboard();
+            } else {
+                this.showScreen('auth-screen');
+            }
         }
     }
 
@@ -56,9 +64,9 @@ class App {
         document.getElementById('submit-btn').addEventListener('click', () => this.submitAnswer());
     }
 
-    async handleLogin() {
+    async handleLogin(passedEmail = null) {
         const emailInput = document.getElementById('user-email');
-        const email = emailInput ? emailInput.value : ''; // Fix ID mismatch
+        const email = passedEmail || (emailInput ? emailInput.value : ''); // Param or Input
 
         // Check for override
         if (email.includes('-ovr') || email.length > 0) {
@@ -314,80 +322,82 @@ class App {
             });
         }
 
-        submitAnswer() {
-            if (!this.selectedOption) return;
+    }
 
-            const result = Game.calculateResult(this.state.activeCase, this.selectedOption);
-            Game.stopTimer(); // Stop timer
+    submitAnswer() {
+        if (!this.selectedOption) return;
 
-            // Update User
-            this.state.currentUser.total_score += result.totalScore;
-            if (result.isCorrect) {
-                this.state.currentUser.cases_solved++;
-                this.state.currentUser.current_streak++;
-                if (this.state.currentUser.current_streak > this.state.currentUser.best_streak) {
-                    this.state.currentUser.best_streak = this.state.currentUser.current_streak;
-                }
-            } else {
-                this.state.currentUser.current_streak = 0;
+        const result = Game.calculateResult(this.state.activeCase, this.selectedOption);
+        Game.stopTimer(); // Stop timer
+
+        // Update User
+        this.state.currentUser.total_score += result.totalScore;
+        if (result.isCorrect) {
+            this.state.currentUser.cases_solved++;
+            this.state.currentUser.current_streak++;
+            if (this.state.currentUser.current_streak > this.state.currentUser.best_streak) {
+                this.state.currentUser.best_streak = this.state.currentUser.current_streak;
             }
-
-            this.showResult(result);
+        } else {
+            this.state.currentUser.current_streak = 0;
         }
 
-        showResult(result) {
-            const modal = document.getElementById('result-modal');
-            modal.classList.remove('hidden');
+        this.showResult(result);
+    }
 
-            const title = document.getElementById('result-title');
-            const icon = document.getElementById('result-icon');
-            const container = document.getElementById('result-icon-container');
+    showResult(result) {
+        const modal = document.getElementById('result-modal');
+        modal.classList.remove('hidden');
 
-            if (result.isCorrect) {
-                title.textContent = "Correct Diagnosis!";
-                title.className = "text-2xl font-bold text-emerald-400 mb-1";
-                icon.textContent = "check_circle";
-                container.className = "size-20 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-emerald-500 text-emerald-500";
-            } else {
-                title.textContent = "Incorrect";
-                title.className = "text-2xl font-bold text-red-500 mb-1";
-                icon.textContent = "cancel";
-                container.className = "size-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-red-500 text-red-500";
-            }
+        const title = document.getElementById('result-title');
+        const icon = document.getElementById('result-icon');
+        const container = document.getElementById('result-icon-container');
 
-            document.getElementById('result-score').textContent = `Total Score: ${this.state.currentUser.total_score}`;
-            document.getElementById('result-explanation').textContent = result.explanation;
-
-            // Reward Logic (Simplified: 1st attempt only)
-            const rewardBox = document.getElementById('reward-box');
-            if (this.state.currentUser.reward_attempts_used === 0) {
-                rewardBox.classList.remove('hidden');
-                // Mock Reward
-                const reward = window.GAME_CONFIG.rewards[result.isCorrect ? 0 : 1]; // Cashback for win, Discount for lose
-                document.getElementById('reward-desc').textContent = reward.description;
-                document.getElementById('reward-code').textContent = reward.couponCode;
-
-                this.state.currentUser.reward_attempts_used = 1; // Mark used
-            } else {
-                rewardBox.classList.add('hidden');
-            }
+        if (result.isCorrect) {
+            title.textContent = "Correct Diagnosis!";
+            title.className = "text-2xl font-bold text-emerald-400 mb-1";
+            icon.textContent = "check_circle";
+            container.className = "size-20 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-emerald-500 text-emerald-500";
+        } else {
+            title.textContent = "Incorrect";
+            title.className = "text-2xl font-bold text-red-500 mb-1";
+            icon.textContent = "cancel";
+            container.className = "size-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-red-500 text-red-500";
         }
 
-        closeResult() {
-            document.getElementById('result-modal').classList.add('hidden');
-            this.loadDashboard();
-        }
+        document.getElementById('result-score').textContent = `Total Score: ${this.state.currentUser.total_score}`;
+        document.getElementById('result-explanation').textContent = result.explanation;
 
-        showScreen(id) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
-            document.getElementById(id).classList.remove('hidden');
-            document.getElementById(id).classList.add('flex');
-        }
+        // Reward Logic (Simplified: 1st attempt only)
+        const rewardBox = document.getElementById('reward-box');
+        if (this.state.currentUser.reward_attempts_used === 0) {
+            rewardBox.classList.remove('hidden');
+            // Mock Reward
+            const reward = window.GAME_CONFIG.rewards[result.isCorrect ? 0 : 1]; // Cashback for win, Discount for lose
+            document.getElementById('reward-desc').textContent = reward.description;
+            document.getElementById('reward-code').textContent = reward.couponCode;
 
-        handleTimeUp() {
-            // ...
-            // Auto-fail logic
+            this.state.currentUser.reward_attempts_used = 1; // Mark used
+        } else {
+            rewardBox.classList.add('hidden');
         }
     }
+
+    closeResult() {
+        document.getElementById('result-modal').classList.add('hidden');
+        this.loadDashboard();
+    }
+
+    showScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+        document.getElementById(id).classList.remove('hidden');
+        document.getElementById(id).classList.add('flex');
+    }
+
+    handleTimeUp() {
+        // ...
+        // Auto-fail logic
+    }
+}
 
 new App();
