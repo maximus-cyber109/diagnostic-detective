@@ -1,67 +1,83 @@
-// Auth Module
-// Handles user login, session management
-
-export const checkSession = () => {
-    const session = localStorage.getItem('dd_session');
-    if (session) {
-        return JSON.parse(session);
+// modules/auth.js - Authentication Handler
+class Auth {
+    constructor() {
+        this.user = null;
+        this.isAuthenticated = false;
     }
-    return null;
-};
 
-export const login = async (email) => {
-    // 1. Validate Email format locally first
-    if (!validateEmail(email)) return null;
+    async validateEmail(email) {
+        try {
+            console.log('🔐 Validating email:', email);
 
-    // 2. Call Magento via Netlify Function
-    try {
-        const response = await fetch(window.GAME_CONFIG.api.validateCustomer, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                action: 'getCustomer',
-                email: email
-            })
-        });
+            // Call Netlify function to validate with Magento and Supabase
+            const response = await fetch(window.GAME_CONFIG.api.validateCustomer, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email })
+            });
 
-        const data = await response.json();
+            const data = await response.json();
 
-        if (data.success && data.customer) {
-            // Customer found in Magento
-            const user = {
-                id: data.customer.id,
-                email: data.customer.email,
-                display_name: `Dr. ${data.customer.firstname} ${data.customer.lastname}`,
-                rank_title: 'Diagnostic Novice',
-                total_score: 0,
-                cases_solved: 0,
-                average_accuracy: '0.00',
-                best_streak: 0,
-                current_streak: 0,
-                reward_attempts_used: 0
+            if (!response.ok || !data.success) {
+                throw new Error(data.error || 'Validation failed');
+            }
+
+            // Store user data
+            this.user = data.user;
+            this.isAuthenticated = true;
+
+            // Save to localStorage for session persistence
+            localStorage.setItem('diagnostic_user', JSON.stringify(data.user));
+            localStorage.setItem('diagnostic_email', email);
+
+            console.log('✅ Authentication successful');
+            return { success: true, user: data.user };
+
+        } catch (error) {
+            console.error('❌ Authentication failed:', error);
+            return {
+                success: false,
+                error: error.message || 'Failed to validate email. Please try again.'
             };
-
-            localStorage.setItem('dd_session', JSON.stringify(user));
-            return user;
-        } else {
-            // Customer not found
-            console.warn('Customer not found:', data.error);
-            return null;
         }
-    } catch (error) {
-        console.error('Login API Error:', error);
-        return null;
     }
-};
 
-export const logout = () => {
-    localStorage.removeItem('dd_session');
-    window.location.reload();
-};
+    // Check if user has existing session
+    checkSession() {
+        const storedUser = localStorage.getItem('diagnostic_user');
+        const storedEmail = localStorage.getItem('diagnostic_email');
 
-function validateEmail(email) {
-    const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    return re.test(String(email).toLowerCase());
+        if (storedUser && storedEmail) {
+            try {
+                this.user = JSON.parse(storedUser);
+                this.isAuthenticated = true;
+                console.log('✅ Session restored');
+                return true;
+            } catch (error) {
+                console.error('Session restore failed:', error);
+                this.logout();
+            }
+        }
+        return false;
+    }
+
+    logout() {
+        this.user = null;
+        this.isAuthenticated = false;
+        localStorage.removeItem('diagnostic_user');
+        localStorage.removeItem('diagnostic_email');
+        console.log('👋 Logged out');
+    }
+
+    getUser() {
+        return this.user;
+    }
+
+    isLoggedIn() {
+        return this.isAuthenticated;
+    }
 }
+
+window.auth = new Auth();

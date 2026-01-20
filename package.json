@@ -1,22 +1,15 @@
 {
-    "name": "diagnostic-detective",
+    "name": "diagnostic-detective-game",
     "version": "1.0.0",
-    "description": "Diagnostic Detective Challenge for PinkBlue.in",
+    "description": "Diagnostic challenge game for dentists",
     "main": "app.js",
     "scripts": {
-        "start": "netlify dev",
-        "build": "echo 'No build step required for static site' && exit 0"
+        "dev": "netlify dev",
+        "build": "echo 'No build step required'",
+        "deploy": "netlify deploy --prod"
     },
-    "keywords": [
-        "game",
-        "dental",
-        "diagnosis"
-    ],
-    "author": "PinkBlue.in",
-    "license": "UNLICENSED",
     "dependencies": {
-        "@supabase/supabase-js": "^2.39.0",
-        "axios": "^1.6.0"
+        "@supabase/supabase-js": "^2.39.0"
     },
     "devDependencies": {
         "netlify-cli": "^17.0.0"

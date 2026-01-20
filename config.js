@@ -1,7 +1,6 @@
-import { generateCases } from './modules/cases.js';
-
+// config.js - Frontend Configuration (NO SECRETS HERE)
 window.GAME_CONFIG = {
-    // API Endpoints
+    // API Endpoints (Netlify Functions)
     api: {
         validateCustomer: '/.netlify/functions/validate-customer',
         submitAttempt: '/.netlify/functions/submit-attempt',
@@ -11,8 +10,8 @@ window.GAME_CONFIG = {
 
     // Game Rules
     game: {
-        maxRewardAttempts: 1,        // STRICT: Only 1 attempt for rewards
-        timePerCase: 180,
+        maxRewardAttempts: 5,
+        timePerCase: 180, // 3 minutes
         basePoints: 100,
         timeBonusThreshold: 60,
         timeBonus: 50,
@@ -20,42 +19,52 @@ window.GAME_CONFIG = {
         streakBonus: 25
     },
 
-    // Reward Tiers (Only 2 Valid Rewards)
+    // Reward Tiers (These are safe to expose)
     rewards: [
         {
-            tier: 'gold',
-            minScore: 100, // Reasonable threshold for the "Cashback"
-            title: 'PinkBlue Cashback',
-            description: '5% Cashback on your next order',
-            couponCode: 'FGAHDS',
-            discount: '5% Cashback',
-            imageUrl: 'assets/images/rewards/participation.png'
+            tier: 'perfect',
+            minScore: 150,
+            title: 'Elements Retract Complete Kit',
+            description: 'Premium hemostatic kit - FREEBIE + 15% Off',
+            couponCode: 'PERFECT15',
+            discount: '15% + Free Product',
+            imageUrl: 'https://email-editor-resources.s3.amazonaws.com/images/82618240/elements%20retract.png'
         },
         {
-            tier: 'silver',
-            minScore: 0, // Everyone who plays gets at least discount
-            title: 'PinkBlue Discount',
-            description: '5% Off your next order',
-            couponCode: 'CODE SDFASG',
+            tier: 'excellent',
+            minScore: 120,
+            title: 'Elements Whitening System',
+            description: 'Professional whitening - 10% Off',
+            couponCode: 'EXCEL10',
+            discount: '10% Off',
+            imageUrl: 'https://email-editor-resources.s3.amazonaws.com/images/82618240/elements%20bleaching%20kit.png'
+        },
+        {
+            tier: 'good',
+            minScore: 100,
+            title: 'Premium Burs Set',
+            description: 'Diamond burs - 5% Off',
+            couponCode: 'GOOD5',
             discount: '5% Off',
-            imageUrl: 'assets/images/rewards/participation.png'
+            imageUrl: 'https://pinkblue.in/media/catalog/product/placeholder/default/no-image.png'
+        },
+        {
+            tier: 'participation',
+            minScore: 0,
+            title: 'Keep Practicing!',
+            description: 'Try again to unlock rewards',
+            couponCode: null,
+            discount: null
         }
     ],
 
-    // Ranks
-    ranks: [
-        { title: 'Novice', minScore: 0, icon: '🔰' },
-        { title: 'Resident', minScore: 500, icon: '🩺' },
-        { title: 'Specialist', minScore: 1500, icon: '⚕️' },
-        { title: 'Chief of Staff', minScore: 3000, icon: '👑' }
-    ],
-
+    // Messages
     messages: {
-        welcome: ["Welcome to PinkBlue Diagnostics."],
-        correct: ["Diagnosis Confirmed."],
-        incorrect: ["Diagnosis Incorrect."],
+        welcome: [
+            "Ready to crack some cases, detective? 🔍",
+            "Time to put those diagnostic skills to work! 💪"
+        ],
+        correct: ["Spot on diagnosis! 🎯", "You nailed it! 🔥"],
+        incorrect: ["Not quite, but great try! 🤔", "Close! Review the explanation 📚"]
     }
 };
-
-// Generate the 100 Cases
-window.ALL_CASES = generateCases();

@@ -1,17 +1,70 @@
-// Database Module
-// Supabase Client Wrapper (Stub for now)
+// modules/database.js - Supabase Client for Frontend
+class Database {
+    constructor() {
+        this.client = null;
+        this.initialized = false;
+    }
 
-// import { createClient } from '@supabase/supabase-js';
+    async init() {
+        try {
+            // Get public Supabase config from Netlify function
+            const response = await fetch('/.netlify/functions/get-config');
+            const config = await response.json();
 
-// const supabase = createClient(window.GAME_CONFIG.supabase.url, window.GAME_CONFIG.supabase.key);
+            if (!config.supabaseUrl || !config.supabaseKey) {
+                throw new Error('Supabase configuration not available');
+            }
 
-export const getCases = async () => {
-    // let { data, error } = await supabase.from('diagnostic_cases').select('*');
-    // return data;
-    return [];
-};
+            // Initialize Supabase client with public anon key
+            this.client = window.supabase.createClient(
+                config.supabaseUrl,
+                config.supabaseKey
+            );
 
-export const saveAttempt = async (userId, result) => {
-    // Write to Supabase...
-    console.log('Saving attempt to DB:', result);
-};
+            this.initialized = true;
+            console.log('✅ Database initialized');
+            return true;
+        } catch (error) {
+            console.error('❌ Database initialization failed:', error);
+            return false;
+        }
+    }
+
+    // Get leaderboard data
+    async getLeaderboard(limit = 10) {
+        try {
+            const response = await fetch(`/.netlify/functions/get-leaderboard?limit=${limit}`);
+            const data = await response.json();
+            return data.success ? data.leaderboard : [];
+        } catch (error) {
+            console.error('Error fetching leaderboard:', error);
+            return [];
+        }
+    }
+
+    // Check user stats
+    async getUserStats(email) {
+        if (!this.initialized || !this.client) {
+            await this.init();
+        }
+
+        try {
+            const { data, error } = await this.client
+                .from('diagnostic_users')
+                .select('*')
+                .eq('email', email)
+                .single();
+
+            if (error && error.code !== 'PGRST116') {
+                throw error;
+            }
+
+            return data;
+        } catch (error) {
+            console.error('Error fetching user stats:', error);
+            return null;
+        }
+    }
+}
+
+window.database = new Database();
