@@ -100,6 +100,23 @@ class Database {
       return [];
     }
   }
+
+  // Get full history for UI
+  async getFullHistory(userId) {
+    if (!this.initialized || !this.client) return [];
+    try {
+      const { data, error } = await this.client
+        .from('diagnostic_attempts')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      console.error("Failed to fetch history:", err);
+      return [];
+    }
+  }
 }
 
 // Create global instance

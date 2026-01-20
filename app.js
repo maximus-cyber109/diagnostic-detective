@@ -373,6 +373,13 @@ class App {
     }
   }
 
+  prevStep() {
+    if (this.currentStep > 1) {
+      this.currentStep--;
+      this.showStep(this.currentStep);
+    }
+  }
+
   showStep(step) {
     // Hide all steps
     for (let i = 1; i <= 3; i++) {
@@ -411,7 +418,14 @@ class App {
 
     // Toggle buttons
     const nextBtn = document.getElementById('next-btn');
+    const prevBtn = document.getElementById('prev-btn');
     const submitBtn = document.getElementById('submit-btn-lg');
+
+    // Handle Back Button
+    if (prevBtn) {
+      if (step === 1) prevBtn.classList.add('hidden');
+      else prevBtn.classList.remove('hidden');
+    }
 
     if (step === 3) {
       if (nextBtn) nextBtn.classList.add('hidden');
@@ -426,6 +440,81 @@ class App {
       if (nextBtn) nextBtn.classList.remove('hidden');
       if (submitBtn) submitBtn.classList.add('hidden');
     }
+  }
+
+  async showHistory() {
+    const user = window.auth.getUser();
+    if (!user) return;
+
+    const modal = document.getElementById('history-modal');
+    const list = document.getElementById('history-list');
+    if (modal && list) {
+      modal.classList.remove('hidden');
+      list.innerHTML = '<div class="text-center py-4"><span class="material-symbols-outlined animate-spin">refresh</span></div>';
+
+      const history = await window.database.getFullHistory(user.id);
+
+      if (!history || history.length === 0) {
+        list.innerHTML = '<p class="text-center text-text-muted py-4">No cases played yet.</p>';
+        return;
+      }
+
+      list.innerHTML = history.map(h => {
+        const date = new Date(h.created_at).toLocaleDateString();
+        const isWin = h.is_correct;
+        const color = isWin ? 'text-green-600 bg-green-50' : 'text-red-500 bg-red-50';
+        const icon = isWin ? 'check_circle' : 'cancel';
+
+        return `
+              <div class="p-3 bg-white border border-slate-100 rounded-xl shadow-sm flex justify-between items-center">
+                  <div>
+                      <div class="flex items-center gap-2">
+                          <span class="font-bold text-sm text-text-main">${h.case_code || 'CASE'}</span>
+                          <span class="text-[10px] px-2 py-0.5 rounded-full ${color} font-bold border border-current opacity-80">
+                              ${isWin ? '+' + h.score_earned : '0'} XP
+                          </span>
+                      </div>
+                      <p class="text-xs text-text-muted mt-0.5">${date}</p>
+                  </div>
+                  <span class="material-symbols-outlined ${isWin ? 'text-green-500' : 'text-red-400'}">${icon}</span>
+              </div>
+              `;
+      }).join('');
+    }
+  }
+
+  async openLeaderboard() {
+    const modal = document.getElementById('leaderboard-modal');
+    const list = document.getElementById('leaderboard-list-full');
+
+    if (modal && list) {
+      modal.classList.remove('hidden');
+      list.innerHTML = '<div class="text-center py-4"><span class="material-symbols-outlined animate-spin">refresh</span></div>';
+
+      const leaders = await window.database.getLeaderboard(20);
+
+      if (!leaders || leaders.length === 0) {
+        list.innerHTML = '<p class="text-center text-text-muted">No data available.</p>';
+        return;
+      }
+
+      list.innerHTML = leaders.map((l, i) => `
+              <div class="p-3 bg-slate-50 rounded-lg flex justify-between items-center border border-slate-100">
+                  <div class="flex items-center gap-3">
+                      <span class="font-bold text-text-sec w-6 text-center">${i + 1}</span>
+                      <div>
+                          <p class="font-bold text-sm text-text-main">${this.formatName(l.display_name)}</p>
+                          <p class="text-[10px] text-text-muted">${l.cases_solved || 0} Solved</p>
+                      </div>
+                  </div>
+                  <span class="font-mono font-bold text-primary text-sm">${l.total_score} XP</span>
+              </div>
+          `).join('');
+    }
+  }
+
+  async submitAnswer_moved() {
+    // Placeholder to keep the method sequence clean if needed, but not used here.
   }
 
   async submitAnswer() {
