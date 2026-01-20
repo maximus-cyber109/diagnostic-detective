@@ -49,13 +49,19 @@ exports.handler = async (event, context) => {
         } = attemptData;
 
         // Validate required fields
-        if (!userId || !caseId) {
+        if (!userId) {
             return {
                 statusCode: 400,
                 headers,
                 body: JSON.stringify({ success: false, error: 'Missing required fields' })
             };
         }
+
+        // Check if caseId is a valid UUID
+        const isUUID = (str) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+
+        // If generated case (e.g. "c64"), database ID is null, but we track by code
+        const dbCaseId = (caseId && isUUID(caseId)) ? caseId : null;
 
         // Get user's current attempt count
         const { data: user } = await supabase
@@ -71,7 +77,7 @@ exports.handler = async (event, context) => {
             .from('diagnostic_attempts')
             .insert([{
                 user_id: userId,
-                case_id: caseId,
+                case_id: dbCaseId, // Null if procedural case
                 case_code: caseCode,
                 attempt_number: attemptNumber,
                 selected_option: selectedOption,
@@ -97,7 +103,6 @@ exports.handler = async (event, context) => {
         }
 
         // Update user statistics
-        // Update user statistics
         const { data: currentUser, error: userError } = await supabase
             .from('diagnostic_users')
             .select('total_attempts, total_score, cases_solved, reward_attempts_used')
@@ -105,7 +110,7 @@ exports.handler = async (event, context) => {
             .single();
 
         if (userError && userError.code !== 'PGRST116') {
-             console.warn('Could not fetch user stats for update', userError);
+            console.warn('Could not fetch user stats for update', userError);
         }
 
         const updates = {
@@ -114,17 +119,17 @@ exports.handler = async (event, context) => {
         };
 
         if (currentUser) {
-             // Calculate new values based on current DB state
-             if (!isPracticeMode) {
-                 updates.reward_attempts_used = (currentUser.reward_attempts_used || 0) + 1;
-             }
-             
-             if (isCorrect) {
-                 updates.cases_solved = (currentUser.cases_solved || 0) + 1;
-             }
-             
-             // Update score
-             updates.total_score = (currentUser.total_score || 0) + totalScore;
+            // Calculate new values based on current DB state
+            if (!isPracticeMode) {
+                updates.reward_attempts_used = (currentUser.reward_attempts_used || 0) + 1;
+            }
+
+            if (isCorrect) {
+                updates.cases_solved = (currentUser.cases_solved || 0) + 1;
+            }
+
+            // Update score
+            updates.total_score = (currentUser.total_score || 0) + totalScore;
         }
 
         await supabase
@@ -132,11 +137,13 @@ exports.handler = async (event, context) => {
             .update(updates)
             .eq('id', userId);
 
-        // Update case play count using the valid RPC function
-        try {
-            await supabase.rpc('increment_case_play_count', { case_id: caseId });
-        } catch (rpcError) {
-            console.warn('Failed to increment case count:', rpcError);
+        // Update case play count using the valid RPC function ONLY if we have a real DB case ID
+        if (dbCaseId) {
+            try {
+                await supabase.rpc('increment_case_play_count', { case_id: dbCaseId });
+            } catch (rpcError) {
+                console.warn('Failed to increment case count:', rpcError);
+            }
         }
 
         return {
