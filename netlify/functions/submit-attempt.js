@@ -72,6 +72,33 @@ exports.handler = async (event, context) => {
 
         const attemptNumber = (user?.total_attempts || 0) + 1;
 
+        // -----------------------------------------------------
+        // REWARD CALCULATION LOGIC
+        // -----------------------------------------------------
+        // Fetch active rewards
+        const { data: rewards } = await supabase
+            .from('diagnostic_rewards')
+            .select('*')
+            .eq('is_active', true)
+            .order('priority', { ascending: true }); // High priority first
+
+        let earnedReward = null;
+
+        if (rewards && rewards.length > 0) {
+            // Find best matching reward
+            earnedReward = rewards.find(r => totalScore >= r.min_score && totalScore <= r.max_score);
+        }
+
+        const tierName = earnedReward ? earnedReward.tier_name : null;
+        const tierId = earnedReward ? earnedReward.tier_id : null;
+        const rTitle = earnedReward ? earnedReward.tier_name : null;
+        const cCode = earnedReward ? earnedReward.coupon_code : null;
+        const cDiscount = earnedReward ? earnedReward.discount_value : null;
+
+        console.log('🏆 Calculated Reward:', tierName, cCode);
+
+
+
         // Insert attempt record
         const { data: attempt, error: attemptError } = await supabase
             .from('diagnostic_attempts')
@@ -89,10 +116,13 @@ exports.handler = async (event, context) => {
                 total_score: totalScore,
                 is_practice_mode: isPracticeMode || false,
                 difficulty: difficulty,
-                reward_tier: rewardTier,
-                reward_title: rewardTitle,
-                coupon_code: couponCode,
-                coupon_discount: couponDiscount,
+
+                // Saving Reward Details
+                reward_tier: tierId,
+                reward_title: rTitle,
+                coupon_code: cCode,
+                coupon_discount: cDiscount,
+
                 created_at: new Date().toISOString()
             }])
             .select()
@@ -164,7 +194,12 @@ exports.handler = async (event, context) => {
             body: JSON.stringify({
                 success: true,
                 attempt: attempt,
-                message: 'Attempt recorded successfully'
+                message: 'Attempt recorded successfully',
+                reward: earnedReward ? {
+                    name: earnedReward.product_description || earnedReward.tier_name,
+                    code: earnedReward.coupon_code,
+                    discount: earnedReward.discount_value
+                } : null
             })
         };
 
