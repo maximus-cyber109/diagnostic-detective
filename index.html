@@ -231,15 +231,17 @@
 
             <!-- Stats Grid -->
             <div class="grid grid-cols-2 gap-4 mt-8">
-                <div class="col-span-1 bg-white rounded-2xl p-4 border border-border-light shadow-soft-panel">
+                <div
+                    class="col-span-2 bg-white rounded-2xl p-4 border border-border-light shadow-soft-panel text-center">
                     <p class="text-text-muted text-[10px] uppercase tracking-wider font-bold mb-2">Cases Solved</p>
-                    <p class="text-text-main text-2xl font-bold font-display" id="dash-solved">0</p>
+                    <p class="text-text-main text-3xl font-bold font-display" id="dash-solved">0</p>
                 </div>
-                <div class="col-span-1 bg-white rounded-2xl p-4 border border-border-light shadow-soft-panel">
-                    <p class="text-text-muted text-[10px] uppercase tracking-wider font-bold mb-2">Diagnostic Accuracy
-                    </p>
-                    <p class="text-text-main text-2xl font-bold font-display" id="dash-accuracy">--</p>
-                </div>
+
+                <button onclick="app.showHistory()"
+                    class="col-span-2 py-3 rounded-xl bg-indigo-50 border-2 border-indigo-100 text-indigo-600 font-bold text-sm hover:bg-indigo-100 transition-colors flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined">history</span>
+                    View Case History
+                </button>
             </div>
         </main>
 
@@ -269,17 +271,11 @@
 
         <!-- Action Buttons -->
         <div class="mt-8 mb-12 grid grid-cols-2 gap-4 pb-12">
-            <button onclick="app.showHistory()"
-                class="col-span-2 py-3 rounded-xl bg-indigo-50 border-2 border-indigo-100 text-indigo-600 font-bold text-sm hover:bg-indigo-100 transition-colors flex items-center justify-center gap-2">
-                <span class="material-symbols-outlined">history</span>
-                View Case History
-            </button>
             <button onclick="window.location.href='https://pinkblue.in'"
                 class="col-span-1 py-3 rounded-xl bg-white border-2 border-slate-200 text-text-sec font-bold text-sm hover:border-primary hover:text-primary transition-colors">
                 Back to Store
             </button>
-            <button
-                onclick="navigator.clipboard.writeText('https://pinkblue.in/diagnostic-detective').then(() => window.ui.showToast('Link copied to clipboard!', 'success'))"
+            <button onclick="app.shareLink()"
                 class="col-span-1 py-3 rounded-xl bg-primary/10 border-2 border-primary/20 text-primary font-bold text-sm hover:bg-primary/20 transition-colors flex items-center justify-center gap-2">
                 <span class="material-symbols-outlined text-lg">share</span>
                 Share Link

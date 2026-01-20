@@ -442,6 +442,10 @@ class Cases {
     getCaseById(id) {
         return this.cases.find(c => c.id === id);
     }
+
+    getCaseByCode(code) {
+        return this.cases.find(c => c.caseCode === code);
+    }
 }
 
 // Create global instance

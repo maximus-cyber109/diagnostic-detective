@@ -34,12 +34,12 @@ exports.handler = async (event, context) => {
 
         const leaderboard = data.map((user, index) => ({
             rank: index + 1,
-            name: user.display_name,
+            display_name: user.display_name,
             city: user.city,
-            score: user.total_score,
-            casesSolved: user.cases_solved,
-            accuracy: user.average_accuracy,
-            streak: user.best_streak
+            total_score: user.total_score,
+            cases_solved: user.cases_solved,
+            average_accuracy: user.average_accuracy,
+            best_streak: user.best_streak
         }));
 
         return {

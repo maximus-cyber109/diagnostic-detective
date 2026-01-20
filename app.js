@@ -465,21 +465,44 @@ class App {
         const color = isWin ? 'text-green-600 bg-green-50' : 'text-red-500 bg-red-50';
         const icon = isWin ? 'check_circle' : 'cancel';
 
+        // Get Case Details
+        const caseDetail = window.cases.getCaseByCode(h.case_code);
+        const title = caseDetail ? caseDetail.title : (h.case_code || 'Mystery Case');
+        const codeDisplay = caseDetail ? h.case_code : '';
+
         return `
               <div class="p-3 bg-white border border-slate-100 rounded-xl shadow-sm flex justify-between items-center">
                   <div>
                       <div class="flex items-center gap-2">
-                          <span class="font-bold text-sm text-text-main">${h.case_code || 'CASE'}</span>
-                          <span class="text-[10px] px-2 py-0.5 rounded-full ${color} font-bold border border-current opacity-80">
-                              ${isWin ? '+' + h.score_earned : '0'} XP
-                          </span>
+                          <span class="font-bold text-sm text-text-main">${title}</span>
+                          ${codeDisplay ? `<span class="text-[10px] text-text-muted bg-slate-100 px-1.5 rounded">${codeDisplay}</span>` : ''}
                       </div>
-                      <p class="text-xs text-text-muted mt-0.5">${date}</p>
+                      <div class="flex items-center gap-2 mt-1">
+                          <span class="text-[10px] px-2 py-0.5 rounded-full ${color} font-bold border border-current opacity-80">
+                              ${isWin ? '+' + h.score_earned + ' XP' : '0 XP'}
+                          </span>
+                          <p class="text-[10px] text-text-muted">${date}</p>
+                      </div>
                   </div>
                   <span class="material-symbols-outlined ${isWin ? 'text-green-500' : 'text-red-400'}">${icon}</span>
               </div>
               `;
       }).join('');
+    }
+  }
+
+  shareLink() {
+    const url = 'https://pinkblue.in/diagnostic-detective';
+    if (navigator.share) {
+      navigator.share({
+        title: 'Diagnostic Detective',
+        text: 'Can you solve this dental case? Play now!',
+        url: url
+      }).catch(console.error);
+    } else {
+      navigator.clipboard.writeText(url)
+        .then(() => window.ui.showToast('Link copied to clipboard!', 'success'))
+        .catch(() => window.ui.showToast('Failed to copy link', 'error'));
     }
   }
 
