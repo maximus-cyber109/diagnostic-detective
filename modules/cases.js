@@ -3,195 +3,444 @@
 class Cases {
     constructor() {
         this.cases = [];
-        this.baseScenarios = [
-            {
-                diagnosis: 'Irreversible Pulpitis',
-                difficulty: 'intermediate',
-                symptoms: ['Spontaneous pain', 'Lingering thermal sensitivity', 'Night pain'],
-                findings: ['Deep caries', 'Tenderness to percussion'],
-                imageType: 'pulpitis.png',
-                correctOption: 'Irreversible Pulpitis',
-                distractors: ['Reversible Pulpitis', 'Necrotic Pulp', 'Normal Pulp']
-            },
-            {
-                diagnosis: 'Periapical Abscess',
-                difficulty: 'beginner',
-                symptoms: ['Swelling', 'Severe pain on biting', 'Fever'],
-                findings: ['Periapical radiolucency', 'Sinus tract'],
-                imageType: 'abscess.png',
-                correctOption: 'Acute Apical Abscess',
-                distractors: ['Chronic Apical Abscess', 'Phoenix Abscess', 'Cellulitis']
-            },
-            {
-                diagnosis: 'Periodontitis',
-                difficulty: 'intermediate',
-                symptoms: ['Bleeding gums', 'Loose teeth', 'Bad breath'],
-                findings: ['Bone loss', 'Calculus', 'Pocket depth > 5mm'],
-                imageType: 'perio.png',
-                correctOption: 'Chronic Periodontitis',
-                distractors: ['Gingivitis', 'Aggressive Periodontitis', 'Periodontal Abscess']
-            },
-            {
-                diagnosis: 'Pericoronitis',
-                difficulty: 'beginner',
-                symptoms: ['Pain in back of jaw', 'Difficulty opening mouth', 'Swollen flap'],
-                findings: ['Partially impacted 3rd molar', 'Inflamed operculum'],
-                imageType: 'wisdom.png',
-                correctOption: 'Pericoronitis',
-                distractors: ['Pulpitis', 'TMJ Disorder', 'Dry Socket']
-            },
-            {
-                diagnosis: 'Cracked Tooth',
-                difficulty: 'advanced',
-                symptoms: ['Sharp pain on chewing', 'Sensitivity to cold'],
-                findings: ['Fracture line visible', 'Positive bite test'],
-                imageType: 'crack.png',
-                correctOption: 'Cracked Tooth Syndrome',
-                distractors: ['Reversible Pulpitis', 'Occlusal Trauma', 'Sinusitis']
-            },
-            // NEW SCENARIOS
-            {
-                diagnosis: 'Pulp Necrosis',
-                difficulty: 'intermediate',
-                symptoms: ['Discoloration of tooth', 'No response to cold', 'History of trauma'],
-                findings: ['Periapical radiolucency', 'Negative pulp test'],
-                imageType: 'pulpitis.png', // Reusing pulpitis image
-                correctOption: 'Pulp Necrosis',
-                distractors: ['Irreversible Pulpitis', 'Normal Pulp', 'Dentin Hypersensitivity']
-            },
-            {
-                diagnosis: 'Alveolar Osteitis',
-                difficulty: 'beginner',
-                symptoms: ['Severe throbbing pain 3 days post-extraction', 'Foul taste', 'Radiating pain'],
-                findings: ['Empty socket', 'Lost blood clot', 'Exposed bone'],
-                imageType: 'wisdom.png', // Reusing wisdom/extraction image
-                correctOption: 'Dry Socket',
-                distractors: ['Infection', 'Retained root tip', 'Osteomyelitis']
-            },
-            {
-                diagnosis: 'Occlusal Trauma',
-                difficulty: 'advanced',
-                symptoms: ['Pain on biting', 'Thermal sensitivity', 'Soreness in morning'],
-                findings: ['Widened PDL space', 'Wear facets', 'Mobility'],
-                imageType: 'perio.png', // Reusing perio image for PDL width
-                correctOption: 'Occlusal Trauma',
-                distractors: ['Periodontitis', 'Cracked Tooth', 'Pulpitis']
-            },
-            {
-                diagnosis: 'Dentin Hypersensitivity',
-                difficulty: 'intermediate',
-                symptoms: ['Sharp flash of pain with cold air', 'Pain with brushing'],
-                findings: ['Gingival recession', 'Cervical abrasion', 'No caries'],
-                imageType: 'crack.png', // Reusing crack image (clinical view)
-                correctOption: 'Dentin Hypersensitivity',
-                distractors: ['Reversible Pulpitis', 'Caries', 'Cracked Tooth']
-            },
-            {
-                diagnosis: 'Reversible Pulpitis',
-                difficulty: 'beginner',
-                symptoms: ['Sharp pain with cold', 'Pain subsides immediately upon removal of stimulus'],
-                findings: ['Caries into dentin', 'No periapical changes'],
-                imageType: 'pulpitis.png',
-                correctOption: 'Reversible Pulpitis',
-                distractors: ['Irreversible Pulpitis', 'Necrotic Pulp', 'Normal Pulp']
-            }
-        ];
-
-        this.teeth = [16, 17, 26, 27, 36, 37, 46, 47, 11, 21];
-        this.ages = [22, 28, 35, 42, 55, 61, 19, 45];
-        this.names = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis'];
+        this.defineCases(); // Load the 17 unique cases
     }
 
     loadCases() {
-        console.log('📂 Loading cases...');
-        this.cases = this.generateCases();
-        console.log(`✅ Loaded ${this.cases.length} cases`);
+        // Compatibility method, just logs
+        console.log(`✅ Loaded ${this.cases.length} unique cases`);
     }
 
-    generateCases() {
-        const generated = [];
-
-        for (let i = 1; i <= 100; i++) {
-            const scenario = this.baseScenarios[Math.floor(Math.random() * this.baseScenarios.length)];
-            const tooth = this.teeth[Math.floor(Math.random() * this.teeth.length)];
-            const age = this.ages[Math.floor(Math.random() * this.ages.length)];
-            const name = this.names[Math.floor(Math.random() * this.names.length)];
-
-            // Random Vitals
-            const bpSys = 110 + Math.floor(Math.random() * 30);
-            const bpDia = 70 + Math.floor(Math.random() * 15);
-            const isDiabetic = Math.random() < 0.2; // 20% chance
-            const allergies = Math.random() < 0.1 ? "Penicillin" : "None";
-
-            // Randomize Options
-            const options = [...scenario.distractors, scenario.correctOption]
-                .sort(() => Math.random() - 0.5);
-
-            const optionMap = {
-                A: options[0],
-                B: options[1],
-                C: options[2],
-                D: options[3]
-            };
-
-            const correctAnswerKey = Object.keys(optionMap).find(key => optionMap[key] === scenario.correctOption);
-
-            generated.push({
-                id: `c${i}`,
-                caseCode: `CASE${i.toString().padStart(3, '0')}`,
-                caseNumber: i,
-                title: `${scenario.diagnosis} - Tooth #${tooth}`,
-                difficulty: scenario.difficulty,
-
-                // Patient Info
-                patientName: name,
-                patientAge: age,
-                patientGender: Math.random() > 0.5 ? 'Male' : 'Female',
-                vitals: {
-                    bp: `${bpSys}/${bpDia}`,
-                    diabetes: isDiabetic ? "Yes (Type 2)" : "No",
-                    allergies: allergies
-                },
-
-                chiefComplaint: `Patient complains of ${scenario.symptoms[0].toLowerCase()} in area of tooth #${tooth}.`,
-                medicalHistory: isDiabetic ? "Controlled Diabetes" : "No significant history",
-
-                clinicalFindings: [...scenario.findings, `Tooth #${tooth} tests positive`],
-                radiographicFindings: [`Changes consistent with ${scenario.diagnosis.toLowerCase()}`],
-
-                // Image
-                primaryImageUrl: `https://bwuercsdytqsvjgpntjn.supabase.co/storage/v1/object/public/Whistle/${scenario.imageType}`,
-
-                question: "What is the most likely diagnosis?",
-                option_a: optionMap.A,
-                option_b: optionMap.B,
-                option_c: optionMap.C,
-                option_d: optionMap.D,
-                correctAnswer: correctAnswerKey,
-
-                explanation: `The presence of ${scenario.findings[0]} and ${scenario.symptoms[0]} strongly suggests ${scenario.diagnosis}.`,
+    defineCases() {
+        // 17 Unique Cases based on provided assets
+        this.cases = [
+            {
+                id: 'c1',
+                caseCode: 'CASE001',
+                title: 'Acute Apical Abscess',
+                difficulty: 'beginner',
+                patientName: 'John Doe',
+                patientAge: 34,
+                patientGender: 'Male',
+                vitals: { bp: '128/82', diabetes: 'No', allergies: 'Penicillin' },
+                chiefComplaint: 'Severe spontaneous throbbing pain and swelling on the lower right.',
+                medicalHistory: 'No significant history',
+                clinicalFindings: ['Facial swelling', 'Tenderness to palpation', 'Grade 3 mobility'],
+                radiographicFindings: ['Large periapical radiolucency', 'Widened PDL'],
+                primaryImageUrl: 'https://bwuercsdytqsvjgpntjn.supabase.co/storage/v1/object/public/Whistle/abscess.png',
+                question: 'What is the most likely diagnosis?',
+                option_a: 'Acute Apical Abscess',
+                option_b: 'Chronic Periodontitis',
+                option_c: 'Reversible Pulpitis',
+                option_d: 'Cementoma',
+                correctAnswer: 'A',
+                explanation: 'Severe throbbing pain, swelling, and periapical radiolucency indicate an acute abscess.',
                 pointsValue: 100,
                 timeLimit: 120
-            });
-        }
-
-        return generated;
+            },
+            {
+                id: 'c2',
+                caseCode: 'CASE002',
+                title: 'Amalgam Overhang',
+                difficulty: 'intermediate',
+                patientName: 'Sarah Smith',
+                patientAge: 42,
+                patientGender: 'Female',
+                vitals: { bp: '118/76', diabetes: 'No', allergies: 'None' },
+                chiefComplaint: 'Food gets stuck between my back teeth and it hurts.',
+                medicalHistory: 'Hypertension controlled',
+                clinicalFindings: ['Gingival inflammation', 'Food impaction', 'Catch on floss'],
+                radiographicFindings: ['Radio-opaque projection on distal of #46'],
+                primaryImageUrl: 'https://bwuercsdytqsvjgpntjn.supabase.co/storage/v1/object/public/Whistle/amalgam_overhang.png',
+                question: 'Identify the iatrogenic factor contributing to the periodontal issue.',
+                option_a: 'Amalgam Overhang',
+                option_b: 'Recurrent Caries',
+                option_c: 'Furcation Involvement',
+                option_d: 'Vertical Root Fracture',
+                correctAnswer: 'A',
+                explanation: 'The radiograph clearly shows an amalgam overhang acting as a plaque trap.',
+                pointsValue: 100,
+                timeLimit: 120
+            },
+            {
+                id: 'c3',
+                caseCode: 'CASE003',
+                title: 'Interproximal Caries',
+                difficulty: 'beginner',
+                patientName: 'Mike Johnson',
+                patientAge: 19,
+                patientGender: 'Male',
+                vitals: { bp: '120/80', diabetes: 'No', allergies: 'None' },
+                chiefComplaint: 'Sensitivty to sweets.',
+                medicalHistory: 'None',
+                clinicalFindings: ['White spot lesion', 'Chalky enamel'],
+                radiographicFindings: ['Radiolucency in enamel extending to DEJ'],
+                primaryImageUrl: 'https://bwuercsdytqsvjgpntjn.supabase.co/storage/v1/object/public/Whistle/caries_interproximal.png',
+                question: 'What is the diagnosis?',
+                option_a: 'Proximal Caries',
+                option_b: 'Amalgam Tattoo',
+                option_c: 'Internal Resorption',
+                option_d: 'Calculus',
+                correctAnswer: 'A',
+                explanation: 'Classic triangular radiolucency at the contact point indicates proximal caries.',
+                pointsValue: 100,
+                timeLimit: 120
+            },
+            {
+                id: 'c4',
+                caseCode: 'CASE004',
+                title: 'Mixed Dentition Checkup',
+                difficulty: 'beginner',
+                patientName: 'Emily Rose',
+                patientAge: 9,
+                patientGender: 'Female',
+                vitals: { bp: '100/60', diabetes: 'No', allergies: 'None' },
+                chiefComplaint: 'Routine checkup.',
+                medicalHistory: 'None',
+                clinicalFindings: ['Mixed dentition', 'Loose primary molar'],
+                radiographicFindings: ['Developing permanent successors', 'Resorbing primary roots'],
+                primaryImageUrl: 'https://bwuercsdytqsvjgpntjn.supabase.co/storage/v1/object/public/Whistle/case001_primary.jpg',
+                question: 'Is the development appropriate for the age?',
+                option_a: 'Normal Development',
+                option_b: 'Delayed Eruption',
+                option_c: 'Ectopic Eruption',
+                option_d: 'Congenitally Missing Teeth',
+                correctAnswer: 'A',
+                explanation: 'Radiographic appearance is consistent with normal mixed dentition for a 9-year-old.',
+                pointsValue: 100,
+                timeLimit: 120
+            },
+            {
+                id: 'c5',
+                caseCode: 'CASE005',
+                title: 'Condensing Osteitis',
+                difficulty: 'intermediate',
+                patientName: 'Robert Brown',
+                patientAge: 30,
+                patientGender: 'Male',
+                vitals: { bp: '130/85', diabetes: 'No', allergies: 'Codeine' },
+                chiefComplaint: 'Mild dull ache occasionally.',
+                medicalHistory: 'None',
+                clinicalFindings: ['Large restoration on #36', 'Non-vital pulp'],
+                radiographicFindings: ['Diffuse radiopacity at apex of #36'],
+                primaryImageUrl: 'https://bwuercsdytqsvjgpntjn.supabase.co/storage/v1/object/public/Whistle/condensing_osteitis.png',
+                question: 'What is the radiopaque lesion at the apex?',
+                option_a: 'Condensing Osteitis',
+                option_b: 'Cementoblastoma',
+                option_c: 'Osteosclerosis',
+                option_d: 'Hypercementosis',
+                correctAnswer: 'A',
+                explanation: 'Condensing osteitis is a reaction to low-grade infection, common at the apex of non-vital teeth.',
+                pointsValue: 100,
+                timeLimit: 120
+            },
+            {
+                id: 'c6',
+                caseCode: 'CASE006',
+                title: 'Cracked Tooth',
+                difficulty: 'advanced',
+                patientName: 'Jennifer Wu',
+                patientAge: 50,
+                patientGender: 'Female',
+                vitals: { bp: '122/78', diabetes: 'No', allergies: 'Latex' },
+                chiefComplaint: 'Sharp pain when I eat nuts.',
+                medicalHistory: 'None',
+                clinicalFindings: ['Visible fracture line', 'Pain on release (Bite Test)'],
+                radiographicFindings: ['Often inconclusive', 'Possible J-shaped lesion'],
+                primaryImageUrl: 'https://bwuercsdytqsvjgpntjn.supabase.co/storage/v1/object/public/Whistle/crack.png',
+                question: 'Which test is pathognomonic for this condition?',
+                option_a: 'Bite Test (Tooth Slooth)',
+                option_b: 'EPT',
+                option_c: 'Percussion',
+                option_d: 'Palpation',
+                correctAnswer: 'A',
+                explanation: 'Sharp pain on release of biting pressure is the hallmark of a cracked tooth.',
+                pointsValue: 100,
+                timeLimit: 120
+            },
+            {
+                id: 'c7',
+                caseCode: 'CASE007',
+                title: 'Radicular Cyst',
+                difficulty: 'advanced',
+                patientName: 'Alan Grant',
+                patientAge: 45,
+                patientGender: 'Male',
+                vitals: { bp: '135/88', diabetes: 'Type 2', allergies: 'None' },
+                chiefComplaint: 'Noticed a bump on my gum.',
+                medicalHistory: 'Controlled Diabetes',
+                clinicalFindings: ['Non-vital incisor', 'Slight expansion of cortex'],
+                radiographicFindings: ['Well-defined unilocular radiolucency with corticated border'],
+                primaryImageUrl: 'https://bwuercsdytqsvjgpntjn.supabase.co/storage/v1/object/public/Whistle/endo_cyst.png',
+                question: 'What is the most likely cystic lesion?',
+                option_a: 'Radicular Cyst',
+                option_b: 'Dentigerous Cyst',
+                option_c: 'OKC',
+                option_d: 'Lateral Periodontal Cyst',
+                correctAnswer: 'A',
+                explanation: 'Radicular cysts are associated with non-vital teeth and often have a well-defined corticated border.',
+                pointsValue: 100,
+                timeLimit: 120
+            },
+            {
+                id: 'c8',
+                caseCode: 'CASE008',
+                title: 'Dental Fluorosis',
+                difficulty: 'beginner',
+                patientName: 'Lisa Simpson',
+                patientAge: 12,
+                patientGender: 'Female',
+                vitals: { bp: '110/70', diabetes: 'No', allergies: 'None' },
+                chiefComplaint: 'My teeth have white spots.',
+                medicalHistory: 'Lived in high fluoride area',
+                clinicalFindings: ['Generalized white mottling', 'Enamel is hard and smooth'],
+                radiographicFindings: ['Normal enamel density'],
+                primaryImageUrl: 'https://bwuercsdytqsvjgpntjn.supabase.co/storage/v1/object/public/Whistle/fluorosis_mottled.png',
+                question: 'What is the cause of this discoloration?',
+                option_a: 'Dental Fluorosis',
+                option_b: 'Amelogenesis Imperfecta',
+                option_c: 'Tetracycline Staining',
+                option_d: 'Early Childhood Caries',
+                correctAnswer: 'A',
+                explanation: 'Generalized mottling from excess fluoride intake during development causes fluorosis.',
+                pointsValue: 100,
+                timeLimit: 120
+            },
+            {
+                id: 'c9',
+                caseCode: 'CASE009',
+                title: 'Plaque Induced Gingivitis',
+                difficulty: 'beginner',
+                patientName: 'Kevin Hart',
+                patientAge: 25,
+                patientGender: 'Male',
+                vitals: { bp: '120/80', diabetes: 'No', allergies: 'None' },
+                chiefComplaint: 'Gums bleed when I brush.',
+                medicalHistory: 'Smoker',
+                clinicalFindings: ['Erythematous gingiva', 'Bleeding on probing', 'No attachment loss'],
+                radiographicFindings: ['No bone loss'],
+                primaryImageUrl: 'https://bwuercsdytqsvjgpntjn.supabase.co/storage/v1/object/public/Whistle/gingivitis_inflamed.png',
+                question: 'What is the primary etiology?',
+                option_a: 'Plaque Biofilm',
+                option_b: 'Vitamin C Deficiency',
+                option_c: 'Leukemia',
+                option_d: 'Viral Infection',
+                correctAnswer: 'A',
+                explanation: 'Gingivitis is primarily caused by the accumulation of plaque biofilm.',
+                pointsValue: 100,
+                timeLimit: 120
+            },
+            {
+                id: 'c10',
+                caseCode: 'CASE010',
+                title: 'Impacted Canine',
+                difficulty: 'intermediate',
+                patientName: 'Tony Stark',
+                patientAge: 16,
+                patientGender: 'Male',
+                vitals: { bp: '118/75', diabetes: 'No', allergies: 'None' },
+                chiefComplaint: 'My baby tooth never fell out.',
+                medicalHistory: 'None',
+                clinicalFindings: ['Retained deciduous canine', 'Bulge on palate'],
+                radiographicFindings: ['Permanent canine impacted palatally'],
+                primaryImageUrl: 'https://bwuercsdytqsvjgpntjn.supabase.co/storage/v1/object/public/Whistle/impacted_canine.png',
+                question: 'What is the classification of this impaction?',
+                option_a: 'Palatal Impaction',
+                option_b: 'Labial Impaction',
+                option_c: 'Transposition',
+                option_d: 'Ankylosis',
+                correctAnswer: 'A',
+                explanation: 'A palatal bulge and radiographic parallax confirm palatal impaction of the canine.',
+                pointsValue: 100,
+                timeLimit: 120
+            },
+            {
+                id: 'c11',
+                caseCode: 'CASE011',
+                title: 'Aphthous Ulcer',
+                difficulty: 'beginner',
+                patientName: 'Diana Prince',
+                patientAge: 28,
+                patientGender: 'Female',
+                vitals: { bp: '110/65', diabetes: 'No', allergies: 'None' },
+                chiefComplaint: 'Painful sore inside my lip.',
+                medicalHistory: 'Stress',
+                clinicalFindings: ['Yellow-white ulcer with red halo', 'Non-keratinized mucosa'],
+                radiographicFindings: ['None'],
+                primaryImageUrl: 'https://bwuercsdytqsvjgpntjn.supabase.co/storage/v1/object/public/Whistle/path_ulcer.png',
+                question: 'What is the diagnosis?',
+                option_a: 'Recurrent Aphthous Ulcer',
+                option_b: 'Herpes Simplex',
+                option_c: 'Traumatic Ulcer',
+                option_d: 'Squamous Cell Carcinoma',
+                correctAnswer: 'A',
+                explanation: 'The appearance (yellow center, red halo) on non-keratinized mucosa is classic for an aphthous ulcer.',
+                pointsValue: 100,
+                timeLimit: 120
+            },
+            {
+                id: 'c12',
+                caseCode: 'CASE012',
+                title: 'Heavy Calculus',
+                difficulty: 'beginner',
+                patientName: 'Bruce Wayne',
+                patientAge: 40,
+                patientGender: 'Male',
+                vitals: { bp: '130/80', diabetes: 'No', allergies: 'None' },
+                chiefComplaint: 'I hate dentists. Bad breath.',
+                medicalHistory: 'None',
+                clinicalFindings: ['Heavy supragingival calculus', 'Inamed gingiva'],
+                radiographicFindings: ['Horizontal bone loss'],
+                primaryImageUrl: 'https://bwuercsdytqsvjgpntjn.supabase.co/storage/v1/object/public/Whistle/perio_calculus.png',
+                question: 'What is the calcified deposit shown?',
+                option_a: 'Calculus',
+                option_b: 'Materia Alba',
+                option_c: 'Plaque',
+                option_d: 'Hyperplasia',
+                correctAnswer: 'A',
+                explanation: 'Hardened, mineralized plaque deposits are known as Calculus (Tartar).',
+                pointsValue: 100,
+                timeLimit: 120
+            },
+            {
+                id: 'c13',
+                caseCode: 'CASE013',
+                title: 'Chronic Periodontitis',
+                difficulty: 'intermediate',
+                patientName: 'Clark Kent',
+                patientAge: 55,
+                patientGender: 'Male',
+                vitals: { bp: '135/90', diabetes: 'Yes', allergies: 'None' },
+                chiefComplaint: 'Teeth feel loose.',
+                medicalHistory: 'Diabetes',
+                clinicalFindings: ['Pocket depths >6mm', 'Class 2 mobility', 'Recession'],
+                radiographicFindings: ['Generalized bone loss > 30%'],
+                primaryImageUrl: 'https://bwuercsdytqsvjgpntjn.supabase.co/storage/v1/object/public/Whistle/perio.png',
+                question: 'What is the diagnosis?',
+                option_a: 'Generalized Chronic Periodontitis',
+                option_b: 'Aggressive Periodontitis',
+                option_c: 'Gingivitis',
+                option_d: 'Pericoronitis',
+                correctAnswer: 'A',
+                explanation: 'Bone loss and pocketing in an older patient with diabetes suggests Chronic Periodontitis.',
+                pointsValue: 100,
+                timeLimit: 120
+            },
+            {
+                id: 'c14',
+                caseCode: 'CASE014',
+                title: 'Irreversible Pulpitis',
+                difficulty: 'intermediate',
+                patientName: 'Peter Parker',
+                patientAge: 22,
+                patientGender: 'Male',
+                vitals: { bp: '115/75', diabetes: 'No', allergies: 'Spider bites' },
+                chiefComplaint: 'Excruciating pain keeps me up at night.',
+                medicalHistory: 'None',
+                clinicalFindings: ['Large carious lesion', 'Lingering pain to cold (>10s)'],
+                radiographicFindings: ['Deep caries approaching pulp'],
+                primaryImageUrl: 'https://bwuercsdytqsvjgpntjn.supabase.co/storage/v1/object/public/Whistle/pulpitis.png',
+                question: 'What is the pulpal diagnosis?',
+                option_a: 'Irreversible Pulpitis',
+                option_b: 'Reversible Pulpitis',
+                option_c: 'Necrotic Pulp',
+                option_d: 'Normal Pulp',
+                correctAnswer: 'A',
+                explanation: 'Lingering pain and spontaneous night pain are pathognomonic for Irreversible Pulpitis.',
+                pointsValue: 100,
+                timeLimit: 120
+            },
+            {
+                id: 'c15',
+                caseCode: 'CASE015',
+                title: 'Root Resorption',
+                difficulty: 'advanced',
+                patientName: 'Wade Wilson',
+                patientAge: 35,
+                patientGender: 'Male',
+                vitals: { bp: '120/80', diabetes: 'No', allergies: 'None' },
+                chiefComplaint: 'My tooth looks pink.',
+                medicalHistory: 'History of trauma',
+                clinicalFindings: ['Pink spot on crown', 'Vital pulp'],
+                radiographicFindings: ['Ballooning radiolucency within the pulp chamber'],
+                primaryImageUrl: 'https://bwuercsdytqsvjgpntjn.supabase.co/storage/v1/object/public/Whistle/root_resorption.png',
+                question: 'What is the process shown?',
+                option_a: 'Internal Resorption',
+                option_b: 'External Resorption',
+                option_c: 'Caries',
+                option_d: 'Calcific Metamorphosis',
+                correctAnswer: 'A',
+                explanation: 'A ballooning radiolucency inside the pulp canal indicates Internal Resorption.',
+                pointsValue: 100,
+                timeLimit: 120
+            },
+            {
+                id: 'c16',
+                caseCode: 'CASE016',
+                title: 'Coronal Fracture',
+                difficulty: 'intermediate',
+                patientName: 'Steve Rogers',
+                patientAge: 27,
+                patientGender: 'Male',
+                vitals: { bp: '110/70', diabetes: 'No', allergies: 'None' },
+                chiefComplaint: 'Broke my tooth fighting.',
+                medicalHistory: 'None',
+                clinicalFindings: ['Fracture involving enamel and dentin', 'No pulp exposure'],
+                radiographicFindings: ['Loss of tooth structure', 'No root fracture'],
+                primaryImageUrl: 'https://bwuercsdytqsvjgpntjn.supabase.co/storage/v1/object/public/Whistle/trauma_fracture.png',
+                question: 'Classify this fracture (Ellis).',
+                option_a: 'Ellis Class II',
+                option_b: 'Ellis Class I',
+                option_c: 'Ellis Class III',
+                option_d: 'Le Fort I',
+                correctAnswer: 'A',
+                explanation: 'Ellis Class II involves enamel and dentin but not the pulp.',
+                pointsValue: 100,
+                timeLimit: 120
+            },
+            {
+                id: 'c17',
+                caseCode: 'CASE017',
+                title: 'Pericoronitis',
+                difficulty: 'beginner',
+                patientName: 'Natasha Romanoff',
+                patientAge: 24,
+                patientGender: 'Female',
+                vitals: { bp: '115/72', diabetes: 'No', allergies: 'None' },
+                chiefComplaint: 'My wisdom tooth hurts and I look swollen.',
+                medicalHistory: 'None',
+                clinicalFindings: ['Inflamed operculum over #38', 'Trismus', 'Purulence'],
+                radiographicFindings: ['Vertically impacted #38'],
+                primaryImageUrl: 'https://bwuercsdytqsvjgpntjn.supabase.co/storage/v1/object/public/Whistle/wisdom.png',
+                question: 'What is the diagnosis?',
+                option_a: 'Pericoronitis',
+                option_b: 'Periodontitis',
+                option_c: 'Pulpitis',
+                option_d: 'Tonsillitis',
+                correctAnswer: 'A',
+                explanation: 'Inflammation of the soft tissue (operculum) around a partially erupted tooth is Pericoronitis.',
+                pointsValue: 100,
+                timeLimit: 120
+            }
+        ];
     }
 
     getRandomCase(excludeCodes = []) {
-        if (this.cases.length === 0) {
-            this.loadCases();
-        }
-
         // Filter out cases that have been played
         const availableCases = this.cases.filter(c => !excludeCodes.includes(c.caseCode));
 
         if (availableCases.length === 0) {
             console.warn('All cases played! Resetting pool.');
-            return this.cases[Math.floor(Math.random() * this.cases.length)];
+            // Allow replay if exhausted, but maybe prioritizing least played?
+            // For now, random from full pool
+            const randomIndex = Math.floor(Math.random() * this.cases.length);
+            return this.cases[randomIndex];
         }
 
-        return availableCases[Math.floor(Math.random() * availableCases.length)];
+        // Return a random case from the AVAILABLE pool
+        // This ensures no repeats until all 17 are played
+        const randomIndex = Math.floor(Math.random() * availableCases.length);
+        return availableCases[randomIndex];
     }
 
     getCaseById(id) {

@@ -415,7 +415,13 @@ class App {
 
     if (step === 3) {
       if (nextBtn) nextBtn.classList.add('hidden');
-      if (submitBtn) submitBtn.classList.remove('hidden');
+      if (submitBtn) {
+        submitBtn.classList.remove('hidden');
+        // RESET BUTTON STATE
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        submitBtn.innerHTML = 'CONFIRM DIAGNOSIS';
+      }
     } else {
       if (nextBtn) nextBtn.classList.remove('hidden');
       if (submitBtn) submitBtn.classList.add('hidden');
@@ -423,7 +429,7 @@ class App {
   }
 
   async submitAnswer() {
-    // DISABLE BUTTON IMMEDIATELY
+    // DISABLE BUTTON IMMEDIATELY TO PREVENT DOUBLE CLICK
     const submitBtn = document.getElementById('submit-btn-lg');
     if (submitBtn) {
       submitBtn.disabled = true;
@@ -432,6 +438,19 @@ class App {
     }
 
     const result = window.game.checkAnswer();
+
+    // VALIDATION: Ensure answer selected
+    if (!result || !result.selectedAnswer) {
+      window.ui.showToast('Please select an option first!', 'error');
+      // Reset Button
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        submitBtn.innerHTML = 'CONFIRM DIAGNOSIS';
+      }
+      return;
+    }
+
     const user = window.auth.getUser();
 
     if (!user) {
