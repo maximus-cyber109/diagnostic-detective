@@ -10,7 +10,7 @@ window.GAME_CONFIG = {
 
     // Game Rules
     game: {
-        maxRewardAttempts: 5,
+        maxRewardAttempts: 2,
         timePerCase: 180, // 3 minutes
         basePoints: 100,
         timeBonusThreshold: 60,

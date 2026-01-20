@@ -114,7 +114,7 @@ class Cases {
                 radiographicFindings: [`Changes consistent with ${scenario.diagnosis.toLowerCase()}`],
 
                 // Image
-                primaryImageUrl: `assets/images/cases/${scenario.imageType}`,
+                primaryImageUrl: `https://bwuercsdytqsvjgpntjn.supabase.co/storage/v1/object/public/Whistle/${scenario.imageType}`,
 
                 question: "What is the most likely diagnosis?",
                 option_a: optionMap.A,
@@ -132,11 +132,20 @@ class Cases {
         return generated;
     }
 
-    getRandomCase() {
+    getRandomCase(excludeCodes = []) {
         if (this.cases.length === 0) {
             this.loadCases();
         }
-        return this.cases[Math.floor(Math.random() * this.cases.length)];
+
+        // Filter out cases that have been played
+        const availableCases = this.cases.filter(c => !excludeCodes.includes(c.caseCode));
+
+        if (availableCases.length === 0) {
+            console.warn('All cases played! Resetting pool.');
+            return this.cases[Math.floor(Math.random() * this.cases.length)];
+        }
+
+        return availableCases[Math.floor(Math.random() * availableCases.length)];
     }
 
     getCaseById(id) {

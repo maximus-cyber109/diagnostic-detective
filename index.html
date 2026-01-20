@@ -15,23 +15,21 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: {
-                        "primary": "#007AFF", // Vibrant Clinical Blue
-                        "primary-dark": "#0056b3",
-                        "primary-light": "#E1F0FF",
-                        "accent": "#0EA5E9", // Sky blue for hotspots
-                        "accent-teal": "#30D158",
-                        "background": "#F5F7FA", // Very light gray/blue tint
-                        "background-light": "#F2F4F7",
-                        "surface": "#FFFFFF",
-                        "text-main": "#1E293B", // Slate 800
-                        "text-sec": "#64748B",
-                        "text-muted": "#8E8E93",
-                        "border-color": "#E2E8F0",
-                        "border-light": "#E5E5EA",
-                        "success": "#10B981",
-                        "danger": "#EF4444",
-                    },
+                    "primary": "#E91E63", // PinkBlue Brand Pink
+                    "primary-dark": "#C2185B",
+                    "primary-light": "#FCE4EC",
+                    "accent": "#007AFF", // PinkBlue Brand Blue
+                    "accent-teal": "#30D158",
+                    "background": "#FDF2F8", // Very light pink tint
+                    "background-light": "#FFF0F5",
+                    "surface": "#FFFFFF",
+                    "text-main": "#1E293B", // Slate 800
+                    "text-sec": "#64748B",
+                    "text-muted": "#8E8E93",
+                    "border-color": "#E2E8F0",
+                    "border-light": "#E5E5EA",
+                    "success": "#10B981",
+                    "danger": "#EF4444",
                     fontFamily: {
                         "display": ["Space Grotesk", "sans-serif"],
                         "body": ["Noto Sans", "sans-serif"],
@@ -214,26 +212,44 @@
             </div>
         </main>
 
-        <nav class="fixed bottom-0 w-full z-30 px-4 pb-6 pt-2">
-            <div
-                class="bg-white/90 backdrop-blur-xl border border-white/20 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex items-center justify-around py-3 px-2">
-                <button class="flex flex-col items-center gap-1 w-16 group">
-                    <div class="p-1.5 rounded-xl bg-blue-50 transition-colors">
-                        <span class="material-symbols-outlined text-primary text-[24px]">terminal</span>
-                    </div>
-                    <span class="text-[10px] font-bold text-primary">Terminal</span>
-                </button>
-                <button class="flex flex-col items-center gap-1 w-16 group"
-                    onclick="document.getElementById('leaderboard-modal').classList.remove('hidden')">
-                    <div class="p-1.5 rounded-xl group-hover:bg-slate-50 transition-colors">
-                        <span
-                            class="material-symbols-outlined text-text-muted group-hover:text-primary transition-colors text-[24px]">leaderboard</span>
-                    </div>
-                    <span
-                        class="text-[10px] font-medium text-text-muted group-hover:text-primary transition-colors">Rank</span>
-                </button>
+        <!-- Leaderboard Widget -->
+        <div class="mt-6 bg-white rounded-2xl p-5 border border-border-light shadow-soft-panel">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-sm font-bold text-text-main uppercase tracking-wider">Top Detectives</h3>
+                <button onclick="document.getElementById('leaderboard-modal').classList.remove('hidden')"
+                    class="text-xs font-bold text-primary hover:text-primary-dark">VIEW ALL</button>
             </div>
-        </nav>
+            <div class="space-y-3" id="dashboard-leaderboard">
+                <!-- Loading State -->
+                <div class="animate-pulse flex gap-3 items-center">
+                    <div class="size-8 bg-slate-100 rounded-full"></div>
+                    <div class="h-4 bg-slate-100 rounded w-24"></div>
+                </div>
+                <div class="animate-pulse flex gap-3 items-center">
+                    <div class="size-8 bg-slate-100 rounded-full"></div>
+                    <div class="h-4 bg-slate-100 rounded w-24"></div>
+                </div>
+                <div class="animate-pulse flex gap-3 items-center">
+                    <div class="size-8 bg-slate-100 rounded-full"></div>
+                    <div class="h-4 bg-slate-100 rounded w-24"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="mt-8 grid grid-cols-2 gap-4">
+            <button onclick="window.location.href='https://pinkblue.in'"
+                class="col-span-1 py-3 rounded-xl bg-white border-2 border-slate-200 text-text-sec font-bold text-sm hover:border-primary hover:text-primary transition-colors">
+                Back to Store
+            </button>
+            <button
+                onclick="navigator.clipboard.writeText('https://pinkblue.in/diagnostic-detective').then(() => window.ui.showToast('Link copied to clipboard!', 'success'))"
+                class="col-span-1 py-3 rounded-xl bg-primary/10 border-2 border-primary/20 text-primary font-bold text-sm hover:bg-primary/20 transition-colors flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined text-lg">share</span>
+                Share Link
+            </button>
+        </div>
+        </main>
     </section>
 
     <!-- ===== GAME SCREEN (Stepped Flow) ===== -->
@@ -462,18 +478,33 @@
             </div>
 
             <div id="reward-box"
-                class="hidden mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-xl">
-                <div class="flex items-center gap-3">
-                    <span class="text-2xl">🎁</span>
+                class="hidden mb-6 p-4 bg-gradient-to-r from-pink-50 to-rose-50 border border-primary/20 rounded-xl relative overflow-hidden">
+                <div class="absolute -right-4 -top-4 text-primary/10 text-9xl transform rotate-12 select-none">🎁</div>
+                <div class="relative z-10 flex items-center gap-3 mb-3">
+                    <span class="text-3xl bg-white p-2 rounded-lg shadow-sm">🎟️</span>
                     <div>
-                        <p class="text-xs font-bold text-primary uppercase">Reward Unlocked</p>
-                        <p class="text-sm font-bold text-text-main" id="reward-desc">5% OFF Code</p>
+                        <p class="text-xs font-bold text-primary uppercase tracking-wider">Reward Unlocked</p>
+                        <p class="text-lg font-bold text-text-main leading-tight" id="reward-desc">5% OFF Code</p>
                     </div>
                 </div>
-                <div class="mt-3 flex gap-2">
+
+                <div class="relative z-10 bg-white border border-dashed border-primary/30 rounded-lg p-1.5 flex gap-2">
                     <code
-                        class="flex-1 bg-white border border-slate-200 rounded px-3 py-2 font-mono text-center text-primary font-bold"
+                        class="flex-1 flex items-center justify-center font-mono text-xl text-primary font-black tracking-widest"
                         id="reward-code">CODE123</code>
+                    <button
+                        onclick="navigator.clipboard.writeText(document.getElementById('reward-code').textContent).then(() => window.ui.showToast('Code copied!', 'success'))"
+                        class="p-2 bg-primary/10 rounded hover:bg-primary/20 text-primary transition-colors"
+                        title="Copy Code">
+                        <span class="material-symbols-outlined text-xl">content_copy</span>
+                    </button>
+                </div>
+
+                <div class="relative z-10 mt-3 pt-3 border-t border-primary/10">
+                    <a href="https://pinkblue.in/cart" target="_blank"
+                        class="w-full py-2.5 rounded-lg bg-primary text-white font-bold text-sm shadow flex items-center justify-center gap-2 hover:bg-primary-dark transition-colors">
+                        Redeem Now <span class="material-symbols-outlined text-lg">open_in_new</span>
+                    </a>
                 </div>
             </div>
 
@@ -547,21 +578,22 @@
         </div>
     </section>
 
-  <!-- External Dependencies (Load FIRST) -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  
-  <!-- Configuration (Load SECOND) -->
-  <script src="config.js"></script>
-  
-  <!-- Modules (Load THIRD - Remove type="module") -->
-  <script src="modules/database.js"></script>
-  <script src="modules/ui.js"></script>
-  <script src="modules/auth.js"></script>
-  <script src="modules/cases.js"></script>
-  <script src="modules/game.js"></script>
-  
-  <!-- Main App (Load LAST) -->
-  <script src="app.js"></script>
+    <!-- External Dependencies (Load FIRST) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Configuration (Load SECOND) -->
+    <script src="config.js"></script>
+
+    <!-- Modules (Load THIRD - Remove type="module") -->
+    <script src="modules/database.js"></script>
+    <script src="modules/ui.js"></script>
+    <script src="modules/auth.js"></script>
+    <script src="modules/cases.js"></script>
+    <script src="modules/game.js"></script>
+
+    <!-- Main App (Load LAST) -->
+    <script src="app.js"></script>
 
 </body>
+
 </html>

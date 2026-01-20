@@ -118,7 +118,9 @@ class App {
       // Update dashboard with user info
       const displayNameEl = document.getElementById('user-display-name');
       if (displayNameEl) {
-        displayNameEl.textContent = user.displayName || 'DOCTOR';
+        // Prefer explicit display_name, fallback to formatted email name
+        const rawName = user.displayName || user.email?.split('@')[0] || 'DOCTOR';
+        displayNameEl.textContent = this.formatName(rawName);
       }
 
       const solvedEl = document.getElementById('dash-solved');
@@ -135,25 +137,112 @@ class App {
 
     // Load cases
     window.cases.loadCases();
+
+    // Load Leaderboard Widget
+    this.loadLeaderboard();
+  }
+
+  formatName(name) {
+    if (!name) return 'Doctor';
+    return name
+      .replace(/[._]/g, ' ') // Replace dots/underscores with space
+      .split(' ')
+      .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+      .join(' ');
+  }
+
+  async loadLeaderboard() {
+    const container = document.getElementById('dashboard-leaderboard');
+    if (!container || !window.database) return;
+
+    try {
+      // Fetch top 3
+      const leaders = await window.database.getLeaderboard(3);
+
+      if (!leaders || leaders.length === 0) {
+        container.innerHTML = '<p class="text-xs text-text-muted text-center py-2">No top detectives yet. Be the first!</p>';
+        return;
+      }
+
+      container.innerHTML = leaders.map((leader, index) => {
+        const medals = ['🥇', '🥈', '🥉'];
+        const styles = [
+          'bg-yellow-50 text-yellow-700 border-yellow-100',
+          'bg-slate-50 text-slate-700 border-slate-100',
+          'bg-orange-50 text-orange-700 border-orange-100'
+        ];
+
+        return `
+              <div class="flex items-center justify-between p-2 rounded-lg border ${styles[index] || 'bg-white border-slate-100'}">
+                  <div class="flex items-center gap-3">
+                      <div class="size-8 rounded-full bg-white shadow-sm flex items-center justify-center text-lg">
+                          ${medals[index] || (index + 1)}
+                      </div>
+                      <div>
+                          <p class="text-xs font-bold font-display">${this.formatName(leader.display_name)}</p>
+                          <p class="text-[10px] opacity-80">${leader.cases_solved || 0} Cases</p>
+                      </div>
+                  </div>
+                  <span class="text-xs font-bold font-mono">${leader.total_score || 0} XP</span>
+              </div>
+              `;
+      }).join('');
+
+    } catch (err) {
+      console.error('Failed to load leaderboard widget:', err);
+      container.innerHTML = '<p class="text-xs text-red-400">Unavailable</p>';
+    }
   }
 
   async startRandomGame() {
-    const randomCase = window.cases.getRandomCase();
+    const user = window.auth.getUser();
+
+    // Default to practice mode if no user, but usually we require login
+    let isPracticeMode = false;
+
+    if (user) {
+      // Enforce 2-Attempt Limit
+      const maxAttempts = window.GAME_CONFIG.game.maxRewardAttempts || 2;
+      // Use camelCase if mapped by auth, otherwise check snake_case fallback
+      const attemptsUsed = user.rewardAttemptsUsed !== undefined ? user.rewardAttemptsUsed : (user.reward_attempts_used || 0);
+
+      if (attemptsUsed >= maxAttempts) {
+        isPracticeMode = true;
+        window.ui.showToast('You used your 2 reward attempts. Entering Practice Mode.', 'info');
+      }
+    }
+
+    // Fetch played history for unique cases
+    let playedCodes = [];
+    if (user && window.database) {
+      playedCodes = await window.database.getPlayedCases(user.id);
+    }
+
+    // Get unique case
+    const randomCase = window.cases.getRandomCase(playedCodes);
 
     if (!randomCase) {
-      window.ui.showToast('No cases available', 'error');
+      window.ui.showToast('No new cases available!', 'error');
+      // Optionally reset history here or handle "Game Over" state
       return;
     }
 
-    this.currentCase = randomCase;
+    this.currentCase = { ...randomCase, isPracticeMode }; // Store mode in case object for submission checks
     this.currentStep = 1;
 
-    // Show instructions first
+    // Show instructions first (update text based on mode?)
     const instructionsModal = document.getElementById('instructions-modal');
     if (instructionsModal) {
+      // Optional: Update instruction text dynamically
+      const descEl = document.getElementById('instructions-desc');
+      if (descEl && isPracticeMode) {
+        descEl.textContent = "You are in Practice Mode. You won't earn rewards, but you can sharpen your skills.";
+      }
       instructionsModal.classList.remove('hidden');
     }
   }
+
+
 
   closeInstructions() {
     const modal = document.getElementById('instructions-modal');

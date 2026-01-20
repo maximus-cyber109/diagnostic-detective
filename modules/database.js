@@ -9,7 +9,7 @@ class Database {
     try {
       // Get public Supabase config from Netlify function
       const response = await fetch('/.netlify/functions/get-config');
-      
+
       if (!response.ok) {
         console.warn('⚠️ Could not fetch config from server, using fallback');
         // Fallback - will work if you add public keys to config.js
@@ -18,7 +18,7 @@ class Database {
       }
 
       const config = await response.json();
-      
+
       if (!config.supabaseUrl || !config.supabaseKey) {
         console.warn('⚠️ Supabase configuration not available');
         this.initialized = false;
@@ -76,9 +76,28 @@ class Database {
       }
 
       return data;
+      return data;
     } catch (error) {
       console.error('Error fetching user stats:', error);
       return null;
+    }
+  }
+
+  // Get played cases for a user
+  async getPlayedCases(userId) {
+    if (!this.initialized || !this.client) return [];
+
+    try {
+      const { data, error } = await this.client
+        .from('diagnostic_attempts')
+        .select('case_code')
+        .eq('user_id', userId);
+
+      if (error) throw error;
+      return data.map(item => item.case_code);
+    } catch (error) {
+      console.error('Error fetching played cases:', error);
+      return [];
     }
   }
 }
