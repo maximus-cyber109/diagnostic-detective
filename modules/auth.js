@@ -12,7 +12,7 @@ class Auth {
       }
 
       console.log('🔐 Attempting login:', email);
-      
+
       const apiUrl = '/.netlify/functions/validate-customer';
       console.log('API URL:', apiUrl);
 
@@ -29,7 +29,7 @@ class Auth {
 
       if (!response.ok) {
         const contentType = response.headers.get('content-type');
-        
+
         if (contentType && contentType.includes('text/html')) {
           throw new Error('Authentication service unavailable. Please try again later.');
         }
@@ -41,7 +41,7 @@ class Auth {
         } catch (e) {
           console.error('Could not parse error response');
         }
-        
+
         throw new Error(errorMessage);
       }
 
@@ -55,7 +55,7 @@ class Auth {
       // Store user data
       this.user = data.user;
       this.isAuthenticated = true;
-      
+
       localStorage.setItem('diagnostic_user', JSON.stringify(data.user));
       localStorage.setItem('diagnostic_email', email);
 
@@ -64,15 +64,15 @@ class Auth {
 
     } catch (error) {
       console.error('❌ Login error:', error);
-      
+
       let userMessage = error.message;
-      
+
       if (error.message.includes('Failed to fetch')) {
         userMessage = 'Network error. Please check your connection.';
       }
-      
-      return { 
-        success: false, 
+
+      return {
+        success: false,
         error: userMessage
       };
     }
@@ -93,7 +93,7 @@ class Auth {
       console.error('Session restore error:', error);
       this.logout();
     }
-    
+
     return false;
   }
 
@@ -107,6 +107,13 @@ class Auth {
 
   getUser() {
     return this.user;
+  }
+
+  updateUser(updates) {
+    if (!this.user) return;
+    this.user = { ...this.user, ...updates };
+    localStorage.setItem('diagnostic_user', JSON.stringify(this.user));
+    console.log('🔄 User stats updated local:', this.user);
   }
 
   isLoggedIn() {

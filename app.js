@@ -506,6 +506,11 @@ class App {
       if (data.success) {
         console.log('✅ Attempt recorded:', data);
 
+        // Update Local Stats (Practice Mode Limit)
+        if (data.newStats) {
+          window.auth.updateUser(data.newStats);
+        }
+
         // Pass reward to result modal
         this.showResult({
           ...result,

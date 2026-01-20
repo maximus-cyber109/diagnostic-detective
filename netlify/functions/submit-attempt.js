@@ -177,6 +177,13 @@ exports.handler = async (event, context) => {
             // We don't fail the written attempt, but we should know about this
         } else {
             console.log('✅ User stats updated successfully');
+
+            // Trigger Leaderboard Refresh
+            try {
+                await supabase.rpc('refresh_leaderboard');
+            } catch (rpcErr) {
+                console.warn('⚠️ Failed to refresh leaderboard:', rpcErr);
+            }
         }
 
         // Update case play count using the valid RPC function ONLY if we have a real DB case ID
@@ -199,7 +206,12 @@ exports.handler = async (event, context) => {
                     name: earnedReward.product_description || earnedReward.tier_name,
                     code: earnedReward.coupon_code,
                     discount: earnedReward.discount_value
-                } : null
+                } : null,
+                newStats: {
+                    rewardAttemptsUsed: updates.reward_attempts_used,
+                    totalScore: updates.total_score,
+                    casesSolved: updates.cases_solved
+                }
             })
         };
 
