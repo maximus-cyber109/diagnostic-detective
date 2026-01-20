@@ -55,6 +55,10 @@ class App {
 
       if (emailParam) {
         console.log('🔗 URL Email found:', emailParam);
+        // HIDE AUTH SCREEN IMMEDIATELY
+        const authScreen = document.getElementById('auth-screen');
+        if (authScreen) authScreen.classList.add('hidden');
+
         // Auto-login
         await this.handleLogin(emailParam);
       } else {
@@ -64,6 +68,8 @@ class App {
         if (hasSession) {
           console.log('✅ Session found, loading dashboard...');
           this.loadDashboard();
+          const authScreen = document.getElementById('auth-screen');
+          if (authScreen) authScreen.classList.add('hidden');
         } else {
           console.log('🔐 No session, showing login...');
           this.showScreen('auth');
@@ -96,6 +102,8 @@ class App {
 
     if (!email) {
       window.ui.showToast('Please enter your email', 'error');
+      // If manually triggered and invalid, ensure auth screen is visible
+      if (!emailOverride) this.showScreen('auth');
       return;
     }
 

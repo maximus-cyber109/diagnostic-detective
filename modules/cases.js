@@ -48,6 +48,52 @@ class Cases {
                 imageType: 'crack.png',
                 correctOption: 'Cracked Tooth Syndrome',
                 distractors: ['Reversible Pulpitis', 'Occlusal Trauma', 'Sinusitis']
+            },
+            // NEW SCENARIOS
+            {
+                diagnosis: 'Pulp Necrosis',
+                difficulty: 'intermediate',
+                symptoms: ['Discoloration of tooth', 'No response to cold', 'History of trauma'],
+                findings: ['Periapical radiolucency', 'Negative pulp test'],
+                imageType: 'pulpitis.png', // Reusing pulpitis image
+                correctOption: 'Pulp Necrosis',
+                distractors: ['Irreversible Pulpitis', 'Normal Pulp', 'Dentin Hypersensitivity']
+            },
+            {
+                diagnosis: 'Alveolar Osteitis',
+                difficulty: 'beginner',
+                symptoms: ['Severe throbbing pain 3 days post-extraction', 'Foul taste', 'Radiating pain'],
+                findings: ['Empty socket', 'Lost blood clot', 'Exposed bone'],
+                imageType: 'wisdom.png', // Reusing wisdom/extraction image
+                correctOption: 'Dry Socket',
+                distractors: ['Infection', 'Retained root tip', 'Osteomyelitis']
+            },
+            {
+                diagnosis: 'Occlusal Trauma',
+                difficulty: 'advanced',
+                symptoms: ['Pain on biting', 'Thermal sensitivity', 'Soreness in morning'],
+                findings: ['Widened PDL space', 'Wear facets', 'Mobility'],
+                imageType: 'perio.png', // Reusing perio image for PDL width
+                correctOption: 'Occlusal Trauma',
+                distractors: ['Periodontitis', 'Cracked Tooth', 'Pulpitis']
+            },
+            {
+                diagnosis: 'Dentin Hypersensitivity',
+                difficulty: 'intermediate',
+                symptoms: ['Sharp flash of pain with cold air', 'Pain with brushing'],
+                findings: ['Gingival recession', 'Cervical abrasion', 'No caries'],
+                imageType: 'crack.png', // Reusing crack image (clinical view)
+                correctOption: 'Dentin Hypersensitivity',
+                distractors: ['Reversible Pulpitis', 'Caries', 'Cracked Tooth']
+            },
+            {
+                diagnosis: 'Reversible Pulpitis',
+                difficulty: 'beginner',
+                symptoms: ['Sharp pain with cold', 'Pain subsides immediately upon removal of stimulus'],
+                findings: ['Caries into dentin', 'No periapical changes'],
+                imageType: 'pulpitis.png',
+                correctOption: 'Reversible Pulpitis',
+                distractors: ['Irreversible Pulpitis', 'Necrotic Pulp', 'Normal Pulp']
             }
         ];
 
