@@ -1,109 +1,76 @@
-// Game Module
-// Handles timer, scoring logic, and state
+// modules/game.js - Game Logic Handler
+class Game {
+  constructor() {
+    this.currentCase = null;
+    this.startTime = null;
+    this.timerInterval = null;
+    this.selectedAnswer = null;
+  }
 
-let timerInterval = null;
-let startTime = 0;
-let currentTime = 0;
-let gameActive = false;
-let currentStreak = 0; // Should be loaded from user state
+  async startGame(caseData) {
+    this.currentCase = caseData;
+    this.startTime = Date.now();
+    this.selectedAnswer = null;
+    
+    console.log('🎮 Game started:', caseData.title);
+    
+    // Start timer
+    this.startTimer();
+    
+    return true;
+  }
 
-export const initGame = (caseData, onTimeUp) => {
-    gameActive = true;
-    startTime = Date.now();
-
-    const timeLimit = caseData.timeLimit || window.GAME_CONFIG.game.timePerCase;
-    let timeRemaining = timeLimit;
-
-    updateTimerDisplay(timeRemaining);
-
-    if (timerInterval) clearInterval(timerInterval);
-
-    timerInterval = setInterval(() => {
-        if (!gameActive) return;
-
-        timeRemaining--;
-        currentTime = timeRemaining;
-        updateTimerDisplay(timeRemaining);
-
-        if (timeRemaining <= 0) {
-            clearInterval(timerInterval);
-            if (onTimeUp) onTimeUp();
-        }
+  startTimer() {
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+    }
+    
+    this.timerInterval = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - this.startTime) / 1000);
+      const minutes = Math.floor(elapsed / 60);
+      const seconds = elapsed % 60;
+      
+      const timerEl = document.getElementById('game-timer');
+      if (timerEl) {
+        timerEl.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+      }
     }, 1000);
-};
+  }
 
-export const stopTimer = () => {
-    gameActive = false;
-    clearInterval(timerInterval);
-    return Math.floor((Date.now() - startTime) / 1000); // Time taken in seconds
-};
-
-function updateTimerDisplay(seconds) {
-    const minutes = Math.floor(seconds / 60);
-    const remSeconds = seconds % 60;
-    const display = `${minutes.toString().padStart(2, '0')}:${remSeconds.toString().padStart(2, '0')}`;
-
-    const timerEl = document.getElementById('game-timer');
-    if (timerEl) {
-        timerEl.textContent = display;
-
-        // Urgency effects
-        if (seconds <= 30) {
-            timerEl.classList.add('pulse-urgent');
-        } else {
-            timerEl.classList.remove('pulse-urgent');
-        }
+  stopTimer() {
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+      this.timerInterval = null;
     }
-}
+  }
 
-export const calculateResult = (caseData, selectedOption) => {
-    const isCorrect = selectedOption === caseData.correctAnswer;
-    const timeTaken = Math.floor((Date.now() - startTime) / 1000); // Seconds
+  getTimeTaken() {
+    return Math.floor((Date.now() - this.startTime) / 1000);
+  }
 
-    let baseScore = 0;
-    let timeBonus = 0;
-    let streakBonus = 0;
+  selectAnswer(answer) {
+    this.selectedAnswer = answer;
+  }
 
-    if (isCorrect) {
-        baseScore = window.GAME_CONFIG.game.basePoints;
-
-        // Time Bonus
-        if (timeTaken < window.GAME_CONFIG.game.timeBonusThreshold) {
-            timeBonus = window.GAME_CONFIG.game.timeBonus;
-        }
-
-        // Streak Bonus (Simple local logic for now)
-        currentStreak++;
-        if (currentStreak >= window.GAME_CONFIG.game.streakBonusThreshold) {
-            streakBonus = window.GAME_CONFIG.game.streakBonus;
-        }
-    } else {
-        currentStreak = 0; // Reset streak
+  checkAnswer() {
+    if (!this.currentCase || !this.selectedAnswer) {
+      return { correct: false, message: 'No answer selected' };
     }
-
-    const totalScore = baseScore + timeBonus + streakBonus;
-
-    // Determine Logic for Rewards (Mock)
-    const reward = determineReward(totalScore);
-
+    
+    const correct = this.selectedAnswer === this.currentCase.correctAnswer;
+    const timeTaken = this.getTimeTaken();
+    
+    this.stopTimer();
+    
     return {
-        isCorrect,
-        correctAnswer: caseData.correctAnswer,
-        timeTaken,
-        baseScore,
-        timeBonus,
-        streakBonus,
-        totalScore,
-        explanation: caseData.explanation,
-        reward
+      correct: correct,
+      selectedAnswer: this.selectedAnswer,
+      correctAnswer: this.currentCase.correctAnswer,
+      timeTaken: timeTaken,
+      explanation: this.currentCase.explanation
     };
-};
-
-function determineReward(score) {
-    // Simple lookup from config
-    const rewards = window.GAME_CONFIG.rewards;
-    for (const r of rewards) {
-        if (score >= r.minScore) return r;
-    }
-    return rewards[rewards.length - 1]; // Participation
+  }
 }
+
+// Create global instance
+window.game = new Game();
