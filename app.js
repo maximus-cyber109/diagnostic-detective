@@ -49,15 +49,25 @@ class App {
         console.warn('⚠️ Database init failed, continuing anyway:', err);
       });
 
-      // Check for existing session
-      const hasSession = window.auth.checkSession();
+      // CHECK URL PARAMS FOR EMAIL
+      const urlParams = new URLSearchParams(window.location.search);
+      const emailParam = urlParams.get('email');
 
-      if (hasSession) {
-        console.log('✅ Session found, loading dashboard...');
-        this.loadDashboard();
+      if (emailParam) {
+        console.log('🔗 URL Email found:', emailParam);
+        // Auto-login
+        await this.handleLogin(emailParam);
       } else {
-        console.log('🔐 No session, showing login...');
-        this.showScreen('auth');
+        // Check for existing session
+        const hasSession = window.auth.checkSession();
+
+        if (hasSession) {
+          console.log('✅ Session found, loading dashboard...');
+          this.loadDashboard();
+        } else {
+          console.log('🔐 No session, showing login...');
+          this.showScreen('auth');
+        }
       }
 
       // Setup event listeners
@@ -80,9 +90,9 @@ class App {
     }
   }
 
-  async handleLogin() {
+  async handleLogin(emailOverride = null) {
     const emailInput = document.getElementById('user-email');
-    const email = emailInput?.value?.trim();
+    const email = emailOverride || emailInput?.value?.trim();
 
     if (!email) {
       window.ui.showToast('Please enter your email', 'error');
@@ -101,12 +111,15 @@ class App {
         this.loadDashboard();
       } else {
         window.ui.showToast(result.error || 'Login failed', 'error');
+        // If failed URL login, show auth screen
+        if (emailOverride) this.showScreen('auth');
       }
 
     } catch (error) {
       console.error('Login error:', error);
       window.ui.hideLoading();
       window.ui.showToast('An error occurred. Please try again.', 'error');
+      if (emailOverride) this.showScreen('auth');
     }
   }
 
@@ -402,6 +415,14 @@ class App {
   }
 
   async submitAnswer() {
+    // DISABLE BUTTON IMMEDIATELY
+    const submitBtn = document.getElementById('submit-btn-lg');
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+      submitBtn.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span> Processing...';
+    }
+
     const result = window.game.checkAnswer();
     const user = window.auth.getUser();
 
@@ -424,11 +445,6 @@ class App {
         timeBonus = window.GAME_CONFIG.game.timeBonus || 50;
         score += timeBonus;
       }
-
-      // Streak Bonus (Mock for now, or check local streak)
-      // For simplicity, we'll let the backend determine consecutive streaks if needed, 
-      // but if we want to send it, we need to track it locally. 
-      // Let's assume 0 for now to be safe or read from user object if we tracked it in session.
     }
 
     const payload = {
@@ -442,7 +458,7 @@ class App {
       timeBonus: timeBonus,
       streakBonus: streakBonus,
       totalScore: score, // For this attempt
-      isPracticeMode: false, // Default to ranked
+      isPracticeMode: this.currentCase.isPracticeMode || false,
       difficulty: this.currentCase.difficulty
     };
 
@@ -462,17 +478,23 @@ class App {
 
       if (data.success) {
         console.log('✅ Attempt recorded:', data);
-        // Could update local user stats here with data.attempt or re-fetch user
+
+        // Pass reward to result modal
+        this.showResult({
+          ...result,
+          scoreEarned: score,
+          reward: data.reward
+        });
+
       } else {
         console.error('❌ Submission failed:', data.error);
+        this.showResult({ ...result, scoreEarned: score });
       }
 
     } catch (err) {
       console.error('❌ Network error submitting attempt:', err);
+      this.showResult({ ...result, scoreEarned: score });
     }
-
-    // Show result modal
-    this.showResult({ ...result, scoreEarned: score });
   }
 
   showResult(result) {
@@ -485,18 +507,51 @@ class App {
     const score = document.getElementById('result-score');
     const explanation = document.getElementById('result-explanation');
 
+    // Reward Elements
+    const rewardBox = document.getElementById('reward-box');
+    const rewardDesc = document.getElementById('reward-desc');
+    const rewardCode = document.getElementById('reward-code');
+
     if (result.correct) {
       iconContainer.className = 'size-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-green-100';
       icon.textContent = 'check_circle';
       icon.className = 'material-symbols-outlined text-4xl text-green-500';
       title.textContent = 'Correct Diagnosis!';
       score.textContent = `+${result.scoreEarned || 100} Points`;
+
+      // Show Reward if earned
+      if (result.reward && rewardBox) {
+        rewardBox.classList.remove('hidden');
+        if (rewardDesc) rewardDesc.textContent = result.reward.discount || result.reward.name;
+        if (rewardCode) rewardCode.textContent = result.reward.code;
+
+        // Safe Copy Handler
+        const copyBtn = document.querySelector('#reward-box button');
+        if (copyBtn) {
+          copyBtn.onclick = () => {
+            const code = result.reward.code;
+            // Try standard API
+            if (navigator.clipboard) {
+              navigator.clipboard.writeText(code)
+                .then(() => window.ui.showToast('Code copied!', 'success'))
+                .catch(() => this.fallbackCopy(code));
+            } else {
+              this.fallbackCopy(code);
+            }
+          };
+        }
+
+      } else if (rewardBox) {
+        rewardBox.classList.add('hidden');
+      }
+
     } else {
       iconContainer.className = 'size-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-red-100';
       icon.textContent = 'cancel';
       icon.className = 'material-symbols-outlined text-4xl text-red-500';
       title.textContent = 'Incorrect';
       score.textContent = `Correct answer: ${result.correctAnswer}`;
+      if (rewardBox) rewardBox.classList.add('hidden');
     }
 
     if (explanation) {
@@ -504,6 +559,29 @@ class App {
     }
 
     modal.classList.remove('hidden');
+  }
+
+  fallbackCopy(text) {
+    // Fallback for iFrames blocking clipboard API
+    try {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed'; // Avoid scrolling to bottom
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+      const successful = document.execCommand('copy');
+      document.body.removeChild(textarea);
+
+      if (successful) {
+        window.ui.showToast('Code copied to clipboard!', 'success');
+      } else {
+        window.ui.showToast('Please copy code manually: ' + text, 'info');
+      }
+    } catch (err) {
+      console.error('Fallback copy failed', err);
+      window.ui.showToast('Please copy code manually: ' + text, 'info');
+    }
   }
 
   closeResult() {
