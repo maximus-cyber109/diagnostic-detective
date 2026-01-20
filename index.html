@@ -547,10 +547,21 @@
         </div>
     </section>
 
-    <!-- Scripts -->
-    <script src="config.js" type="module"></script>
-    <script src="modules/cases.js" type="module"></script>
-    <script src="app.js" type="module"></script>
-</body>
+  <!-- External Dependencies (Load FIRST) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <!-- Configuration (Load SECOND) -->
+  <script src="config.js"></script>
+  
+  <!-- Modules (Load THIRD - Remove type="module") -->
+  <script src="modules/database.js"></script>
+  <script src="modules/ui.js"></script>
+  <script src="modules/auth.js"></script>
+  <script src="modules/cases.js"></script>
+  <script src="modules/game.js"></script>
+  
+  <!-- Main App (Load LAST) -->
+  <script src="app.js"></script>
 
+</body>
 </html>
