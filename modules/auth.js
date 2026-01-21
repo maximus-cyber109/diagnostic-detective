@@ -55,15 +55,27 @@ class Auth {
         throw new Error(data.error || 'Authentication failed');
       }
 
+      // MAP RESPONSE TO user OBJECT
+      const userData = data.user || data.customer;
+
+      if (!userData) {
+        throw new Error('Invalid user data received');
+      }
+
+      // Ensure displayName exists
+      if (!userData.displayName && userData.firstname) {
+        userData.displayName = `${userData.firstname} ${userData.lastname || ''}`.trim();
+      }
+
       // Store user data
-      this.user = data.user;
+      this.user = userData;
       this.isAuthenticated = true;
 
-      localStorage.setItem('diagnostic_user', JSON.stringify(data.user));
+      localStorage.setItem('diagnostic_user', JSON.stringify(this.user));
       localStorage.setItem('diagnostic_email', email);
 
       console.log('✅ Login successful:', this.user);
-      return { success: true, user: data.user };
+      return { success: true, user: this.user };
 
     } catch (error) {
       console.error('❌ Login error:', error);
