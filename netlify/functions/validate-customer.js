@@ -1,7 +1,14 @@
 const https = require('https');
+const { createClient } = require('@supabase/supabase-js');
 
 const MAGENTO_TOKEN = process.env.MAGENTO_API_TOKEN || '';
 const MAGENTO_BASE_URL = process.env.MAGENTO_BASE_URL || 'https://pinkblue.in/rest/V1';
+
+// Initialize Supabase
+const supabase = createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_KEY
+);
 
 const FIREWALL_HEADERS = {
     'Authorization': `Bearer ${MAGENTO_TOKEN}`,
@@ -37,7 +44,7 @@ async function getCustomerByEmail(email) {
                         resolve({
                             success: true,
                             customer: {
-                                id: customer.id,
+                                magento_id: customer.id, // Keep Magento ID separately
                                 email: customer.email,
                                 firstname: customer.firstname,
                                 lastname: customer.lastname
@@ -61,11 +68,69 @@ async function getCustomerByEmail(email) {
     });
 }
 
+// Function to Sync with Supabase and Get UUID
+async function syncUserWithSupabase(customer) {
+    console.log('🔄 Syncing user with Supabase:', customer.email);
+
+    // Check if user exists
+    const { data: existingUser, error: fetchError } = await supabase
+        .from('diagnostic_users')
+        .select('id, display_name, magento_customer_id')
+        .eq('email', customer.email)
+        .single();
+
+    if (existingUser) {
+        console.log('✅ User found in DB:', existingUser.id);
+
+        // Update magento_id if missing
+        if (!existingUser.magento_customer_id) {
+            await supabase
+                .from('diagnostic_users')
+                .update({ magento_customer_id: customer.magento_id })
+                .eq('id', existingUser.id);
+        }
+
+        return {
+            ...customer,
+            id: existingUser.id, // USE SUPABASE UUID
+            displayName: existingUser.display_name || `${customer.firstname} ${customer.lastname}`.trim()
+        };
+    }
+
+    // Create new user (Upsert based on email)
+    const displayName = `${customer.firstname} ${customer.lastname}`.trim();
+    const newUser = {
+        email: customer.email,
+        magento_customer_id: customer.magento_id ? String(customer.magento_id) : null,
+        first_name: customer.firstname,
+        last_name: customer.lastname || '',
+        display_name: displayName,
+        is_active: true,
+        created_at: new Date().toISOString()
+    };
+
+    const { data: createdUser, error: insertError } = await supabase
+        .from('diagnostic_users')
+        .upsert(newUser, { onConflict: 'email' })
+        .select()
+        .single();
+
+    if (insertError) {
+        console.error('❌ Supabase user creation failed:', insertError);
+        throw new Error('Failed to synchronize user account');
+    }
+
+    console.log('✨ New user created:', createdUser.id);
+    return {
+        ...customer,
+        id: createdUser.id, // RETURN SUPABASE UUID
+        displayName: displayName
+    };
+}
+
 exports.handler = async (event) => {
     console.log('🚀 Clinical Mastery - Validate Customer');
-    console.log('HTTP Method:', event.httpMethod);
-    console.log('Raw Body:', event.body);
-    console.log('Query Params:', event.queryStringParameters);
+    // console.log('HTTP Method:', event.httpMethod); // Reduced logging
 
     if (event.httpMethod === 'OPTIONS') {
         return { statusCode: 200, headers: CORS_HEADERS, body: '' };
@@ -74,36 +139,56 @@ exports.handler = async (event) => {
     try {
         let action, email;
 
-        // Support both POST body and GET query parameters
         if (event.httpMethod === 'POST' && event.body) {
             const body = JSON.parse(event.body);
             action = body.action;
             email = body.email;
-            console.log('POST - Action:', action, 'Email:', email);
         } else if (event.httpMethod === 'GET' && event.queryStringParameters) {
             action = event.queryStringParameters.action;
             email = event.queryStringParameters.email;
-            console.log('GET - Action:', action, 'Email:', email);
         }
 
         if (action === 'getCustomer' && email) {
-            const result = await getCustomerByEmail(email);
-            return {
-                statusCode: 200,
-                headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
-                body: JSON.stringify(result)
-            };
+            // 1. Get from Magento
+            const magentoResult = await getCustomerByEmail(email);
+
+            if (!magentoResult.success) {
+                return {
+                    statusCode: 200, // Return 200 but simple success: false for frontend
+                    headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+                    body: JSON.stringify(magentoResult)
+                };
+            }
+
+            // 2. Sync with Supabase (Get UUID)
+            try {
+                const synchronizedUser = await syncUserWithSupabase(magentoResult.customer);
+
+                return {
+                    statusCode: 200,
+                    headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        success: true,
+                        customer: synchronizedUser // This now has UUID as .id
+                    })
+                };
+            } catch (syncError) {
+                console.error('Sync Error:', syncError);
+                return {
+                    statusCode: 500,
+                    headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ success: false, error: 'Account synchronization failed' })
+                };
+            }
         }
 
-        // More detailed error message for debugging
         return {
             statusCode: 400,
             headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 success: false,
                 error: 'Invalid request',
-                details: `Missing or invalid parameters. Received action: "${action}", email: "${email}"`,
-                httpMethod: event.httpMethod
+                details: `Missing action or email.`
             })
         };
     } catch (error) {
