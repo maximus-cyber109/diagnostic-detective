@@ -22,7 +22,10 @@ class Auth {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
-        body: JSON.stringify({ email })
+        body: JSON.stringify({
+          action: 'getCustomer',
+          email
+        })
       });
 
       console.log('Response status:', response.status);
