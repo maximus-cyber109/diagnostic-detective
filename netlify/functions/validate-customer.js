@@ -3,7 +3,6 @@ const https = require('https');
 const MAGENTO_TOKEN = process.env.MAGENTO_API_TOKEN || '';
 const MAGENTO_BASE_URL = process.env.MAGENTO_BASE_URL || 'https://pinkblue.in/rest/V1';
 
-// FIREWALL BYPASS HEADERS (WHITELISTED)
 const FIREWALL_HEADERS = {
     'Authorization': `Bearer ${MAGENTO_TOKEN}`,
     'Content-Type': 'application/json',
@@ -63,15 +62,29 @@ async function getCustomerByEmail(email) {
 }
 
 exports.handler = async (event) => {
-    console.log('� Clinical Mastery - Validate Customer');
+    console.log('🚀 Clinical Mastery - Validate Customer');
+    console.log('HTTP Method:', event.httpMethod);
+    console.log('Raw Body:', event.body);
+    console.log('Query Params:', event.queryStringParameters);
 
     if (event.httpMethod === 'OPTIONS') {
         return { statusCode: 200, headers: CORS_HEADERS, body: '' };
     }
 
     try {
-        const body = JSON.parse(event.body || '{}');
-        const { action, email } = body;
+        let action, email;
+
+        // Support both POST body and GET query parameters
+        if (event.httpMethod === 'POST' && event.body) {
+            const body = JSON.parse(event.body);
+            action = body.action;
+            email = body.email;
+            console.log('POST - Action:', action, 'Email:', email);
+        } else if (event.httpMethod === 'GET' && event.queryStringParameters) {
+            action = event.queryStringParameters.action;
+            email = event.queryStringParameters.email;
+            console.log('GET - Action:', action, 'Email:', email);
+        }
 
         if (action === 'getCustomer' && email) {
             const result = await getCustomerByEmail(email);
@@ -82,10 +95,16 @@ exports.handler = async (event) => {
             };
         }
 
+        // More detailed error message for debugging
         return {
             statusCode: 400,
             headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ success: false, error: 'Invalid request' })
+            body: JSON.stringify({
+                success: false,
+                error: 'Invalid request',
+                details: `Missing or invalid parameters. Received action: "${action}", email: "${email}"`,
+                httpMethod: event.httpMethod
+            })
         };
     } catch (error) {
         console.error('Error:', error);
