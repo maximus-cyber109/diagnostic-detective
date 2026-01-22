@@ -177,12 +177,20 @@ class App {
   }
 
   formatName(name) {
-    if (!name) return 'Doctor';
-    return name
+    if (!name) return 'Dr. User';
+
+    let formatted = name
       .replace(/[._]/g, ' ') // Replace dots/underscores with space
       .split(' ')
       .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
       .join(' ');
+
+    // Prefix with Dr. if not already present
+    if (!formatted.startsWith('Dr.') && !formatted.startsWith('Dr ')) {
+      formatted = 'Dr. ' + formatted;
+    }
+
+    return formatted;
   }
 
   async loadLeaderboard() {
