@@ -139,7 +139,7 @@ class App {
     if (currentUser && window.database) {
       try {
         // Background refresh
-        window.database.getUserStats(currentUser.id).then(freshStats => {
+        window.database.getUserStats(currentUser.email).then(freshStats => {
           if (freshStats) {
             const merged = { ...window.auth.getUser(), ...freshStats };
             window.auth.updateUser(merged);

@@ -75,7 +75,7 @@ async function syncUserWithSupabase(customer) {
     // Check if user exists
     const { data: existingUser, error: fetchError } = await supabase
         .from('diagnostic_users')
-        .select('id, display_name, magento_customer_id')
+        .select('*') // Fetch ALL fields (stats, etc)
         .eq('email', customer.email)
         .single();
 
