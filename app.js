@@ -304,7 +304,8 @@ class App {
     // Update patient name
     const ptNameEl = document.getElementById('pt-name');
     if (ptNameEl) {
-      ptNameEl.textContent = this.currentCase.title || 'PATIENT';
+      // OBSCURE ANSWER: Show Case Number instead of Title
+      ptNameEl.textContent = `Case #${this.currentCase.case_number || this.currentCase.case_code || 'Unknown'}`;
     }
 
     // Update vitals (mock data for now)
