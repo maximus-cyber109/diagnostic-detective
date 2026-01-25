@@ -819,12 +819,48 @@ class App {
       content.classList.remove('hidden');
       modal.classList.remove('hidden');
 
+      // Parse current BP
+      let sys = 120, dia = 80;
+      if (this.currentCase && this.currentCase.vitals && this.currentCase.vitals.bp) {
+        const parts = this.currentCase.vitals.bp.split('/');
+        sys = parseInt(parts[0]) || 120;
+        dia = parseInt(parts[1]) || 80;
+      }
+
+      // Update Text
+      const sysValEl = document.getElementById('sys-val-graph');
+      const diaValEl = document.getElementById('dia-val-graph');
+      const categoryEl = document.getElementById('bp-category');
+
+      if (sysValEl) sysValEl.textContent = sys;
+      if (diaValEl) diaValEl.textContent = dia;
+
+      // Update Category Text
+      if (categoryEl) {
+        if (sys >= 140 || dia >= 90) categoryEl.textContent = "High (Hypertension stage 2)";
+        else if (sys >= 130 || dia >= 80) categoryEl.textContent = "High (Hypertension stage 1)";
+        else if (sys >= 120 && sys < 130 && dia < 80) categoryEl.textContent = "Elevated";
+        else categoryEl.textContent = "Normal";
+      }
+
       // Animate BP bars
+      // Scale: Let 0% = 0, 100% = 200mmHg
       setTimeout(() => {
         const sysBar = document.getElementById('sys-bar-graph');
         const diaBar = document.getElementById('dia-bar-graph');
-        if (sysBar) sysBar.style.height = '60%';
-        if (diaBar) diaBar.style.height = '40%';
+
+        const sysPct = Math.min(100, (sys / 200) * 100);
+        const diaPct = Math.min(100, (dia / 200) * 100);
+
+        if (sysBar) {
+          sysBar.style.height = `${sysPct}%`;
+          // Color logic
+          sysBar.className = `w-12 rounded-t-lg relative group transition-all duration-1000 ${sys > 120 ? (sys > 139 ? 'bg-rose-500' : 'bg-amber-400') : 'bg-emerald-500'}`;
+        }
+        if (diaBar) {
+          diaBar.style.height = `${diaPct}%`;
+          diaBar.className = `w-12 rounded-t-lg relative group transition-all duration-1000 ${dia > 80 ? (dia > 89 ? 'bg-rose-300' : 'bg-amber-300') : 'bg-emerald-300'}`;
+        }
       }, 100);
     }
   }
