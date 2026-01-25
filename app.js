@@ -316,11 +316,29 @@ class App {
       ptNameEl.textContent = `Case #${this.currentCase.case_number || this.currentCase.case_code || 'Unknown'}`;
     }
 
-    // Update vitals (mock data for now)
+    // Update vitals (Dynamic)
     const bpSysEl = document.getElementById('pt-bp-sys-lg');
     const bpDiaEl = document.getElementById('pt-bp-dia-lg');
-    if (bpSysEl) bpSysEl.textContent = '120';
-    if (bpDiaEl) bpDiaEl.textContent = '/80';
+
+    if (this.currentCase.vitals && this.currentCase.vitals.bp) {
+      const [sys, dia] = this.currentCase.vitals.bp.split('/');
+      if (bpSysEl) bpSysEl.textContent = sys || '--';
+      if (bpDiaEl) bpDiaEl.textContent = '/' + (dia || '--');
+
+      // Update mini bar graph if exists
+      const sysVal = parseInt(sys);
+      if (!isNaN(sysVal)) {
+        const sysBar = document.getElementById('bp-bar-mini');
+        if (sysBar) {
+          const pct = Math.min(100, Math.max(0, ((sysVal - 100) / 60) * 100)); // Scale 100-160 roughly
+          sysBar.style.width = `${pct}%`;
+          sysBar.className = sysVal > 140 ? 'bg-red-500 h-full' : (sysVal > 120 ? 'bg-amber-500 h-full' : 'bg-emerald-500 h-full');
+        }
+      }
+    } else {
+      if (bpSysEl) bpSysEl.textContent = '--';
+      if (bpDiaEl) bpDiaEl.textContent = '/--';
+    }
 
     // Update complaint
     const complaintEl = document.getElementById('history-complaint-lg');
