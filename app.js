@@ -330,8 +330,32 @@ class App {
 
     // Update image
     const imgEl = document.getElementById('game-image-lg');
-    if (imgEl && this.currentCase.primaryImageUrl) {
-      imgEl.src = this.currentCase.primaryImageUrl;
+    const placeholderEl = document.getElementById('no-image-placeholder');
+    const imageContainer = imgEl ? imgEl.parentElement : null;
+
+    if (imgEl && placeholderEl) {
+      if (this.currentCase.primaryImageUrl) {
+        // CASE WITH IMAGE
+        imgEl.src = this.currentCase.primaryImageUrl;
+        imgEl.classList.remove('hidden');
+        placeholderEl.classList.add('hidden');
+
+        // Ensure container styling is reset if needed (remove any overrides)
+        if (imageContainer) {
+          imageContainer.classList.remove('bg-slate-100');
+          imageContainer.classList.add('bg-black');
+        }
+      } else {
+        // TEXT ONLY CASE
+        imgEl.classList.add('hidden');
+        placeholderEl.classList.remove('hidden');
+
+        // Optional: Style container for text mode
+        if (imageContainer) {
+          imageContainer.classList.remove('bg-black');
+          imageContainer.classList.add('bg-slate-100');
+        }
+      }
     }
 
     // Update findings

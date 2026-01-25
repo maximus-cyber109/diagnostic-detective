@@ -4,6 +4,7 @@ class Cases {
     constructor() {
         this.cases = [];
         this.defineCases(); // Load the 17 unique cases
+        this.generateAdvancedCases(300); // Generate 300 text-based cases
     }
 
     loadCases() {
@@ -423,6 +424,204 @@ class Cases {
                 timeLimit: 120
             }
         ];
+    }
+
+    generateAdvancedCases(count) {
+        const difficulty = 'advanced';
+
+        // Data Pools
+        const firstNames = ['James', 'Mary', 'Robert', 'Patricia', 'John', 'Jennifer', 'Michael', 'Linda', 'David', 'Elizabeth', 'William', 'Barbara', 'Richard', 'Susan', 'Joseph', 'Jessica', 'Thomas', 'Sarah', 'Charles', 'Karen'];
+        const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez', 'Hernandez', 'Lopez', 'Gonzalez', 'Wilson', 'Anderson', 'Thomas', 'Taylor', 'Moore', 'Jackson', 'Martin'];
+
+        const diagnoses = [
+            {
+                condition: 'Trigeminal Neuralgia',
+                templates: [
+                    "Patient describes sharp, electric-shock like pain on the right side of the face triggered by light touch or washing.",
+                    "Complains of paroxysmal 'lightning' stabs in the maxillary region, lasting seconds.",
+                    "Reports intense, brief episodes of unilateral facial pain provoked by shaving or brushing teeth.",
+                    "Experiencing rapid, excruciating pain attacks along the mandible, leaving them afraid to eat."
+                ],
+                clinical: 'No dental pathology. Trigger zone identified on nasolabial fold.',
+                options: ['Acute Pulpitis', 'Trigeminal Neuralgia', 'TMD', 'Sinusitis'],
+                correct: 'B',
+                explanation: 'Brief, electric-shock pain triggered by light touch (trigger zones) is pathognomonic for Trigeminal Neuralgia.',
+                chiefComplaintPref: "The pain is unbearable, like a shock, but only lasts a moment."
+            },
+            {
+                condition: 'Dry Socket (Alveolar Osteitis)',
+                templates: [
+                    "Patient returns 3 days post-extraction complaining of severe throbbing pain radiating to the ear.",
+                    "Reports foul taste and intense pain starting 48 hours after having a lower molar pulled.",
+                    "Severe pain following recent extraction. Site appears empty with exposed bone."
+                ],
+                clinical: 'Extraction socket #38 is empty, losing the clot. Halitosis present.',
+                options: ['Infected Socket', 'Dry Socket', 'Retained Root', 'Osteomyelitis'],
+                correct: 'B',
+                explanation: 'Onset of severe throbbing pain 2-3 days post-op with loss of clot matches Dry Socket.',
+                chiefComplaintPref: "It hurts more now than when you pulled the tooth!"
+            },
+            {
+                condition: 'Sjogren\'s Syndrome',
+                templates: [
+                    "Complains of persistent dry mouth, difficulty swallowing dry food, and dry gritty eyes.",
+                    "Reports needing to drink water constantly to talk. Tongue feels sticky and dry.",
+                    "History of rheumatoid arthritis. Now complaining of burning tongue and rampant cervical caries."
+                ],
+                clinical: 'Mucosa is dry/parched. Mirror sticks to buccal mucosa. Salivary pooling absent.',
+                options: ['Diabetes Mellitus', 'Sjogren\'s Syndrome', 'Candidiasis', 'Medication Side Effect'],
+                correct: 'B',
+                explanation: 'The triad of dry eyes (keratoconjunctivitis sicca), dry mouth (xerostomia), and autoimmune history suggests Sjogren\'s.',
+                chiefComplaintPref: "My mouth is so dry I can barely swallow a cracker."
+            },
+            {
+                condition: 'Oral Pemphigus Vulgaris',
+                templates: [
+                    "Patient presents with multiple painful oral blisters that rupture easily, leaving raw erosions.",
+                    "Reports skin blisters and widespread painful ulcers in the mouth. Positive Nikolsky sign.",
+                    "Complains of desquamative gingivitis and large, irregular ulcers effectively preventing eating."
+                ],
+                clinical: 'Large, irregular erosions. Slight rubbing of normal mucosa causes blistering (Nikolsky+).',
+                options: ['Lichen Planus', 'Pemphigus Vulgaris', 'Herpes Simplex', 'Erythema Multiforme'],
+                correct: 'B',
+                explanation: 'Acantholysis resulting in intraepithelial blistering and a positive Nikolsky sign is characteristic of Pemphigus Vulgaris.',
+                chiefComplaintPref: "The skin inside my mouth is just peeling off."
+            },
+            {
+                condition: 'Ludwig\'s Angina',
+                templates: [
+                    "Emergency: Patient has bilateral submandibular swelling, elevated tongue, and difficulty breathing.",
+                    "Rapidly spreading firm swelling of the floor of mouth. Patient is drooling and struggling to speak (hot potato voice).",
+                    "Massive indurated swelling of the neck following a lower molar infection. Airways at risk."
+                ],
+                clinical: 'Bilateral, board-like firmness of submandibular/sublingual spaces. Tongue elevated.',
+                options: ['Peritonsillar Abscess', 'Ludwig\'s Angina', 'Cellulitis', 'Parotitis'],
+                correct: 'B',
+                explanation: 'Bilateral involvement of submandibular/sublingual/submental spaces with airway threat defines Ludwig\'s Angina.',
+                chiefComplaintPref: "I can't breathe... my tongue feels huge."
+            },
+            {
+                condition: 'Osteomyelitis',
+                templates: [
+                    "Patient reports deep, boring pain in the jaw and numbness of the lip (Vincent's sign) for 2 weeks.",
+                    "History of broken jaw treated poorly. Now has draining sinuses and moth-eaten bone appearance on X-ray.",
+                    "Persistent dull ache, fever, and loose teeth in the area of a past extraction."
+                ],
+                clinical: 'Pustular drainage, mobile sequestrum of bone possible. Paresthesia of V3.',
+                options: ['Osteosarcoma', 'Osteomyelitis', 'Fibrous Dysplasia', 'Paget\'s Disease'],
+                correct: 'B',
+                explanation: 'Deep pain, fever, sequestrum formation, and "moth-eaten" radiolucency indicates Osteomyelitis.',
+                chiefComplaintPref: "My jaw feels dead and numb, and there is pus coming out."
+            },
+            {
+                condition: 'Ameloblastoma',
+                templates: [
+                    "Routine X-ray reveals a large, multilocular 'soap-bubble' radiolucency in the posterior mandible.",
+                    "Painless, slow-growing expansion of the jaw. Radiograph shows honeycomb pattern.",
+                    "Noticed jaw getting bigger on one side over years. No pain. Teeth are shifting."
+                ],
+                clinical: 'Hard bony expansion of mandible. Crepitus (egg-shell cracking) on palpation.',
+                options: ['Odontogenic Keratocyst', 'Ameloblastoma', 'Radicular Cyst', 'Central Giant Cell Granuloma'],
+                correct: 'B',
+                explanation: 'The classic "soap-bubble" or "honeycomb" multilocular radiolucency in the posterior mandible is highly suggestive of Ameloblastoma.',
+                chiefComplaintPref: "My jaw looks swollen but it doesn't hurt at all."
+            },
+            {
+                condition: 'Dentinogenesis Imperfecta',
+                templates: [
+                    "Patient concerned that teeth look blue-gray and translucent. Enamel chips off easily.",
+                    "Both primary and permanent teeth have an opalescent amber color. Early extensive attrition.",
+                    "Radiographs show bulbous crowns and obliterated pulp chambers (cervical constriction)."
+                ],
+                clinical: ' teeth have an opalescent/gray hue. Attrition is severe.',
+                options: ['Amelogenesis Imperfecta', 'Dentinogenesis Imperfecta', 'Tetracycline Staining', 'Fluorosis'],
+                correct: 'B',
+                explanation: 'Opalescent teeth, bulbous crowns, and obliterated pulps are the hallmark of Dentinogenesis Imperfecta.',
+                chiefComplaintPref: "My teeth are crumbling and they look weirdly grey."
+            },
+            {
+                condition: 'Erythema Multiforme',
+                templates: [
+                    "Young adult presents with rapid onset of extensive oral ulcers and crusting, bloody lips.",
+                    "Reports 'target' or 'bulls-eye' lesions on hands and feet accompanying oral sores.",
+                    "Sudden outbreak of oral ulcers and blood-crusted lips following intake of new antibiotic."
+                ],
+                clinical: 'Crusted, hemorrhagic lips. & Target lesions on skin.',
+                options: ['Herpes Zoster', 'Erythema Multiforme', 'Pemphigoid', 'Syphilis'],
+                correct: 'B',
+                explanation: 'Hemorrhagic crusting of lips and cutaneous "target" lesions are classic signs of Erythema Multiforme.',
+                chiefComplaintPref: "My lips are bleeding and I have these target spots on my hands."
+            },
+            {
+                condition: 'Burning Mouth Syndrome',
+                templates: [
+                    "Post-menopausal female complains of scalding sensation on tongue. Tip of tongue looks normal.",
+                    "Constant burning pain 'like hot coffee' on tongue and palate, worsening through the day.",
+                    "Reports taste alterations (metallic) and burning, but no clinical signs of inflammation."
+                ],
+                clinical: 'Oral mucosa appears completely normal despite severe symptom description.',
+                options: ['Candidiasis', 'Burning Mouth Syndrome', 'Geographic Tongue', 'Lichen Planus'],
+                correct: 'B',
+                explanation: 'Chronic burning pain in the absence of clinical or laboratory findings suggests Burning Mouth Syndrome.',
+                chiefComplaintPref: "My tongue feels like I burned it with soup, all day long."
+            }
+        ];
+
+        // Generator Loop
+        for (let i = 0; i < count; i++) {
+            const template = diagnoses[Math.floor(Math.random() * diagnoses.length)];
+            const narrative = template.templates[Math.floor(Math.random() * template.templates.length)];
+            const gender = Math.random() > 0.5 ? 'Male' : 'Female';
+            const fname = firstNames[Math.floor(Math.random() * firstNames.length)];
+            const lname = lastNames[Math.floor(Math.random() * lastNames.length)];
+
+            const sys = 110 + Math.floor(Math.random() * 30);
+            const dia = 70 + Math.floor(Math.random() * 20);
+
+            // Randomize Options Order
+            const shuffledOptions = [...template.options]; // Copy
+            // Ensure correct answer is tracked. We know the correct string from template.correct (e.g., 'B').
+            // But we need to assign it dynamically.
+            // Let's simple-shuffle:
+            // 1. Get the actual correct text string
+            const correctText = template.options[['A', 'B', 'C', 'D'].indexOf(template.correct)];
+
+            // 2. Shuffle array
+            shuffledOptions.sort(() => Math.random() - 0.5);
+
+            // 3. Find new index of correct answer
+            const newCorrectIndex = shuffledOptions.indexOf(correctText);
+            const newCorrectLetter = ['A', 'B', 'C', 'D'][newCorrectIndex];
+
+            const newCase = {
+                id: `gen_${i + 1}`,
+                caseCode: `ADV${(i + 1).toString().padStart(3, '0')}`,
+                title: 'Medical Mystery #' + (i + 1), // Obscure title
+                difficulty: 'advanced',
+                patientName: `${fname} ${lname}`,
+                patientAge: 20 + Math.floor(Math.random() * 50),
+                patientGender: gender,
+                vitals: { bp: `${sys}/${dia}`, diabetes: Math.random() > 0.8 ? 'Yes' : 'No', allergies: Math.random() > 0.8 ? 'Sulfa' : 'None' },
+                chiefComplaint: `${narrative} Patient states: "${template.chiefComplaintPref || "It hurts."}"`,
+                medicalHistory: "See detailed complaint.", // Redundant but kept for structure
+                clinicalFindings: [template.clinical, `BP: ${sys}/${dia}`],
+                radiographicFindings: ['See description above.'], // No image
+                primaryImageUrl: null,
+                question: 'Based on the findings, what is the most likely diagnosis?',
+                option_a: shuffledOptions[0],
+                option_b: shuffledOptions[1],
+                option_c: shuffledOptions[2],
+                option_d: shuffledOptions[3],
+                correctAnswer: newCorrectLetter,
+                explanation: template.explanation,
+                pointsValue: 150, // Higher points for advanced
+                timeLimit: 120
+            };
+
+            this.cases.push(newCase);
+        }
+
+        console.log(`✨ Generated ${count} advanced cases.`);
     }
 
     getRandomCase(excludeCodes = []) {
